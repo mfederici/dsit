@@ -1,2 +1,2 @@
 # Distribution Shift: An Information-Theoretic Analysis
-This repository contains the code used for the computation of the trade-off between train and out-of-distribution error for the information bottleneck, independence and separation criteria. Implementations of the CMNIST, d-CMNIST and y-CMNIST datasets can be found in the 'dataset' directory.
+This repository contains the code used for the computation of the trade-off between train and out-of-distribution error for the information bottleneck, independence and separation criteria. Implementations of the CMNIST, d-CMNIST and y-CMNIST datasets can be found in the 'dataset' directory, while an analysis of the data generating distributions and the different optimization criteria is reported in the visualization notebook.
