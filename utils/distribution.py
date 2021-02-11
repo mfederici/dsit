@@ -1,4 +1,5 @@
 import torch
+from torch.distributions import Categorical
 import string
 
 
@@ -227,11 +228,25 @@ class DiscreteDistribution:
 
         return -(p_ab.p * torch.log(p_a_b.p)).sum()
 
+    def sample(self, n=None):
+        assert len(self.condition) == 0
+        flat_p = self.p.view(-1)
+
+        c_sample = Categorical(probs=flat_p).sample(torch.Size([n]) if n else [])
+
+        sample = {}
+        for i, v in enumerate(reversed(self.indices)):
+            sample[v] = c_sample % self.p.shape[-(i+1)]
+            c_sample = c_sample // self.p.shape[-(i+1)]
+
+        return sample
+
     def __repr__(self):
         return "p(" + ",".join([n for n in self.indices if n not in self.condition]) + (
             "|%s" % (",".join(self.condition)) + (',' if len(self.condition)>0 else '') + (
                 ','.join(['%s=%d' % (k, v) for k, v in self.set_conditions.items()])
             ) if len(self.condition) + len(self.set_conditions) > 0 else "") + ")"
+
 
 
 def compute_kl(dist_1, dist_2, cond_1=None):
