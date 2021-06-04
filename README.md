@@ -1,2 +1,15 @@
 # Distribution Shift: An Information-Theoretic Analysis
-This repository contains the code used for the computation of the trade-off between train and out-of-distribution error for the information bottleneck, independence and separation criteria. Implementations of the CMNIST, d-CMNIST and y-CMNIST datasets can be found in the 'dataset' directory, while an analysis of the data generating distributions and the different optimization criteria is reported in the visualization notebook.
+This repository contains the code used for the results reported in the paper "Distribution Shift:An Information-Theoretic Analysis".
+The code includes the implementation of mutual information computation and optimization for discrete distributions defined through tensors.
+
+## Requirements
+The following libraries are required to run the code:
+- torch >= 1.0
+- seaborn
+- pandas
+- tqdm
+
+## Use
+The notebook 'visualizations.ipynb' constains detailed descriptions of the experiments ad usage for one of the CMNIST distributions considered in this work.
+
+The CMNIST variants used for the experiments reported in this work are defined in the '/datasets' folder. 'dataset.ipynb' shows an example of usage of the dataset using the default pytorch pipeline and 'Dataset' objects.
