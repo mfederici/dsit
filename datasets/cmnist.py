@@ -7,12 +7,12 @@ from datasets.cmnist_dist import make_joint_distribution
 
 # Implementation of the CMNIST, d-CMNIST and y-CMNIST datasets for pytorch
 class CMNIST(MNIST):
-    def __init__(self, root, version='CMNIST', sample_once=False, **params):
+    def __init__(self, root, version='CMNIST', sample_once=False, t=1, **params):
         super(CMNIST, self).__init__(root=root, **params, transform=ToTensor())
 
         assert version in ['CMNIST', 'd-CMNIST', 'y-CMNIST']
 
-        self.dist = make_joint_distribution(version)
+        self.dist = make_joint_distribution(version).condition_on('t',t)
         self.sample_once = sample_once
         self.sampled_data = {}
 
