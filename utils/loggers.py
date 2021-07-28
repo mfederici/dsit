@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 class WandbLogger(loggers.WandbLogger):
     def log(self, name, value, type, global_step):
         if type == 'scalar':
-            self.experiment.log({name: value}, step=global_step)
+            self.experiment.log({name: value, 'trainer/global_step': global_step})
         elif type == 'scalars':
             entry = {'%s/%s' % (name, sub_name): v for sub_name, v in value.items()}
-            self.experiment.log(entry, step=global_step)
+            entry['trainer/global_step'] = global_step
+            self.experiment.log(entry)
         elif type == 'figure':
             self.experiment.log(data={name: wandb.Image(value)}, step=global_step)
             plt.close(value)

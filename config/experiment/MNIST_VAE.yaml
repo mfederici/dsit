@@ -20,7 +20,7 @@ architectures:
 callbacks:
   - _target_: utils.callbacks.EvaluationCallback
     name: ImageReconstruction/Validation
-    evaluate_every: 10 seconds
+    evaluate_every: 60 seconds
     evaluator:
       _target_: code.evaluation.reconstruction.ImageReconstructionQualitativeEvaluation
       evaluate_on: valid
@@ -29,14 +29,14 @@ callbacks:
       sample_latents: False
   - _target_: utils.callbacks.EvaluationCallback
     name: ELBO/Validation
-    evaluate_every: 10 seconds
+    evaluate_every: 60 seconds
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: valid
       n_samples: 2048
   - _target_: utils.callbacks.EvaluationCallback
     name: ELBO/Train
-    evaluate_every: 10 seconds
+    evaluate_every: 60 seconds
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: train
