@@ -1,0 +1,6 @@
+data_root: /ssdstore/data
+big_data_root: /hddstore/data
+experiments_root: /hddstore
+download_files: true
+num_workers: 32
+gpus: 1

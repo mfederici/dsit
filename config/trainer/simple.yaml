@@ -1,0 +1,6 @@
+_target_: pytorch_lightning.Trainer
+logger: ${logger}
+checkpoint_callback: False
+callbacks:
+  - _target_: utils.callbacks.LossItemsLogCallback
+gpus: ${device.gpus}

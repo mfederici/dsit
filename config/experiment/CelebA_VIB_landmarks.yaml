@@ -1,0 +1,70 @@
+# @package _global_
+defaults:
+  - /model: VIB
+  - /data: CelebA
+  - /optimization: batch_ADAM
+
+data:
+  train:
+    target_type: landmarks
+  valid:
+    target_type: landmarks
+  test:
+    target_type: landmarks
+
+architectures:
+  prior:
+    _target_: code.architectures.base.DiagonalNormal
+    z_dim: ${params.z_dim}
+  predictor:
+    _target_: code.architectures.CelebA.LandmarkPredictor
+    z_dim: ${params.z_dim}
+    layers: ${params.landmark_predictor_layers}
+  encoder:
+    _target_: code.architectures.CelebA.Encoder
+    layers: ${params.encoder_layers}
+    z_dim: ${params.z_dim}
+
+callbacks:
+  - _target_: utils.callbacks.EvaluationCallback
+    name: ELBO/Validation
+    evaluate_every: 120 seconds
+    evaluator:
+      _target_: code.evaluation.elbo.ELBOEvaluation
+      evaluate_on: valid
+      n_samples: 2048
+  - _target_: utils.callbacks.EvaluationCallback
+    name: ELBO/Train
+    evaluate_every: 120 seconds
+    evaluator:
+      _target_: code.evaluation.elbo.ELBOEvaluation
+      evaluate_on: train
+      n_samples: 2048
+
+params:
+  z_dim: 64
+  beta: 0.5
+  lr: 1e-3
+  batch_size: 32
+  encoder_layers:
+    - in_channels: 3
+      out_channels: 64
+      kernel_size: 5
+      stride: 2
+    - in_channels: 64
+      out_channels: 128
+      kernel_size: 7
+      stride: 3
+    - in_channels: 128
+      out_channels: 256
+      kernel_size: 7
+      stride: 3
+    - in_channels: 256
+      out_channels: 256
+      kernel_size: 7
+      stride: 3
+    - in_channels: 256
+      out_channels: 256
+      kernel_size: 2
+      stride: 1
+  landmark_predictor_layers: [1024, 128, 32]

@@ -1,0 +1,9 @@
+# @package _global_
+logger:
+  _target_: utils.loggers.WandbLogger
+  project: ${run.project}
+  name: ${run.name}
+  save_dir: ${run.dir}
+extra_callbacks:
+  - _target_: utils.wandb_utils.WandbModelCheckpoint
+

@@ -1,0 +1,6 @@
+data_root: /var/scratch/{oc.env:USER}/data
+big_data_root: /var/scratch/{oc.env:USER}/data
+experiments_root: /var/scratch/{oc.env:USER}
+download_files: true
+num_workers: 32
+gpus: 1

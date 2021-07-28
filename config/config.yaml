@@ -1,0 +1,12 @@
+defaults:
+  - device: ${oc.env:DEVICE_NAME}
+  - trainer: simple
+  - logging: wandb
+
+run:
+  name: null
+  dir: ${device.experiments_root}/experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+hydra:
+  run:
+    dir: ${run.dir}

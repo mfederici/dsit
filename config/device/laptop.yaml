@@ -1,0 +1,5 @@
+data_root: /data
+experiments_root: /tmp
+download_files: true
+num_workers: 8
+gpus: 0
