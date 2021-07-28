@@ -1,7 +1,9 @@
 defaults:
   - device: ${oc.env:DEVICE_NAME}
-  - trainer: simple
+  - trainer: default
   - logging: wandb
+
+callbacks: []
 
 run:
   name: null

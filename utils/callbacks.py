@@ -20,7 +20,7 @@ class EvaluationCallback(pl.Callback):
         self.log_beginning = log_beginning
         self.pause_timers = pause_timers
 
-    def log(self, pl_module, trainer):
+    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
         if self.pause_timers:
             # Pause all the timers
             for callback in trainer.callbacks:
@@ -36,11 +36,10 @@ class EvaluationCallback(pl.Callback):
                 if isinstance(callback, EvaluationCallback):
                     callback.start_timer()
 
-    def on_train_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
-
         if self.log_beginning:
-            self.log(pl_module, trainer)
+            self.evaluate(pl_module, trainer)
 
     def start_timer(self):
         self.last_time = time.time()
@@ -66,17 +65,17 @@ class EvaluationCallback(pl.Callback):
         else:
             return super().__getattribute__(item)
 
-    def on_batch_end(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
+    def on_batch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         self.iterations = trainer.global_step
         self.epochs = pl_module.current_epoch
 
         if self.timer.is_time(self):
             self.timer.update(self)
-            self.log(pl_module, trainer)
+            self.evaluate(pl_module, trainer)
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if self.log_end:
-            self.log(pl_module, trainer)
+            self.evaluate(pl_module, trainer)
 
 
 class LossItemsLogCallback(pl.Callback):
