@@ -6,7 +6,7 @@ conda env create -f environment.yml
 ```
 and activate it:
 ```shell
-conda activate representation-learning
+conda activate frame
 ```
 
 ## Naming the device

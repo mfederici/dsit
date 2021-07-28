@@ -3,7 +3,7 @@ channels:
   - pytorch
   - defaults
 dependencies:
-  - pytorch=1.9.0
+  - pytorch=1.7.0
   - cudatoolkit=10.2
   - numpy=1.18.1
   - numpy-base=1.18.1
@@ -34,5 +34,5 @@ dependencies:
     - envyaml==1.8.210417
     - python-dotenv
     - ipywidgets
-    - hydra==1.1.0
+    - hydra-core==1.1.0
     - pytorch-lightning==1.3.8
