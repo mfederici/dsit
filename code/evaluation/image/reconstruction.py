@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from code.loggers.log_entry import IMAGE_ENTRY
 
 
-class ImageReconstructionQualitativeEvaluation(Evaluation):
+class ImageReconstructionEvaluation(Evaluation):
     def __init__(self, evaluate_on='valid', n_pictures=10, sample_images=False, sample_latents=False):
         # Consider the dataset labeled with the specified name (names are defined in the dataset configuration file).
         self.dataset = None

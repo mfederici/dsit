@@ -1,6 +1,32 @@
+# A Scalable and Re-usable Framework for Deep Learning
+The goal of this repository is to show an example of code implementation and usage of the Weights & Biases, 
+Pytorch Lightning, Hydra and their interaction. This implementation is inspired by the [Reproducible Deep Learning PhD 
+course](https://www.sscardapane.it/teaching/reproducibledl/) from the at Sapienza University (Rome). 
+
+The main design principle driving this project are:
+- **Modularity**: each part of the training/evaluation/logging procedure is implemented as an independent block with 
+pre-defined interactions.
+- **Extensibility**: the framework can be easily extended to include new experiments/models/logging procedures,
+architectures and datasets
+- **Clarity/Readability**: each model contains only the data-agnostic and architecture agnostic-logic.
+
+Main features:
+- Get all the perks of a Pytorch [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- Use the Weights & Bias [sweep tool](https://docs.wandb.ai/guides/sweeps) 
+to easily define hyper-parameters search and launch multiple agents across different devices.
+- Easily handle complex configuration thanks to the powerful [Hydra configuration management](https://hydra.cc/docs/intro/).
+- No need to write any training/configuration script.
+
+As a general concept, the framework is designed to that each piece can be maximally re-used:
+the same model can be used with different architectures and dataset, the same architectures and evaluation procedures 
+can be used with different models, and the same optimization procedure can be used for different models without the need to re-write any code.
+
+
+
+
 # Installing
 ## Conda environment
-Create a new `representation-learning` environment using conda:
+Create a new `frame` environment using conda:
 ```shell
 conda env create -f environment.yml
 ```
@@ -17,7 +43,7 @@ export DEVICE_NAME=<DEVICE_NAME>
 ```
 You can add the previous export to the `.bashrc` file to avoid running it every time a new session is created.
 
-The corresponding `config/device/<DEVICE_NAME>.yaml` device configuration file contains device-specific information 
+The corresponding `config/device/<DEVICE_NAME>.yaml` configuration file contains device-specific information 
 regarding hardware and paths.
 Here we report an example for a device configuration:
 ```yaml
@@ -32,7 +58,7 @@ num_workers: 32                       # Number of workers spawned for data-loadi
 trainer:      # Accessing and changing the parameters of the Pytorch Ligthning trainer
   gpus: 4     # Number of gpus used for training
 ```
-This setup allow easy deployment of the same code on different machines since all the hardware-dependent configuration 
+With this setup, the same code on different machines since all the hardware-dependent configuration 
 is grouped into the device `.yaml` configuration file. 
 
 ## Weights & Bias logging
@@ -61,7 +87,7 @@ python train.py +experiment=VAE_MNIST +trainer.max_epochs=20 params.beta=0.1
 See the [Experiment Definition](#defining-new-experiments) for further information regarding the experimental setup
 
 ## Tensorboard Logging
-default logging is with wandb, but it is possible to switch to tensorboard with
+The default logging uses Weights & Biases, but it is possible to switch to TensorBoard with
 ```shell
 python train.py +experiment=<EXPERIMENT_NAME> logging=tensorboard
 ```
@@ -71,7 +97,7 @@ Alternative loggers can be defined in the `config/logging` configuration `.yaml`
 The `train.py` script is defined to be compatible with [wandb hyper-parameters sweeps](https://docs.wandb.ai/guides/sweeps).
 
 Each sweep definition can directly access the properties and hyper-parameters defined in the configuration files.
-The [following file](sweeps/VAE_MNIST.yml) reports an example for the [MNIST Variational Autoencoder experiment](config/experiment/MNIST_VAE.yaml):
+The [following file](sweeps/VAE_MNIST.yml) reports an example sweep for the [MNIST Variational Autoencoder experiment](config/experiment/MNIST_VAE.yaml):
 ```yaml
 program: train.py
 command:
@@ -123,8 +149,8 @@ The configuration for each run is composed by the following main components:
 - [**logger**](#loggers): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
 
 While `data`, `model`, `architectures`, `optimization procedure`, `parameters` and `callbacks` are experiment-specific, 
-`device`, `logging` and `training` define global properties of the device on which the experiments are running, 
-the logging and training procedures respectively.
+`device`, `logging` and `trainer` define global properties of the device on which the experiments are running, 
+the logging and training parameters respectively.
 
 ## Defining new Experiments
 Each experiment `.yaml` configuration file contains a definition of data, model, architectures, optimization procedure, 
@@ -140,6 +166,10 @@ defaults:
   - /data: MNIST
   - /optimization: batch_ADAM
 ```
+in which `# @package _global_` line is used to specify that the specified keys are global, while `defaults` specifies 
+the values for `data` and `optimization` procedures respectively. Further information regarding
+configuration packages and overrides can be found [here](https://hydra.cc/docs/advanced/overriding_packages).
+
 The [VAE model](code/models/unsupervised/VAE.py) requires the definition of an `encoder`, `decoder` and `prior` architectures: 
 ```yaml
 model:
@@ -157,8 +187,8 @@ model:
     layers: ${params.decoder_layers}
   beta: ${params.beta}
 ```
-The `_target_` key contains references to the corresponding python classes, while the other values are passed to the 
-`__init__()` constructor on initialization.
+The `_target_` key contains references to Python classes, while the other values are passed to the 
+`__init__()` constructor on initialization (e.g. `Encoder(layers, z_dim)` is called when instantiating the encoder architecture).
 
 Note that instead of writing the value of the hyper-parameters (such as the number of latents `z_dim` or regularization 
 strength `beta`) directly in the architecture definition, we refer to the `params` section (e.g. `${params.z_dim}`, 
@@ -180,7 +210,7 @@ callbacks:
     name: ImageReconstruction/Validation              # Name reported in the log
     evaluate_every: 60 seconds                        # Evaluation time (in seconds, minutes, hours, iterations or epochs)
     evaluator:
-      _target_: code.evaluation.reconstruction.ImageReconstructionQualitativeEvaluation # Class defining the evaluation
+      _target_: code.evaluation.image.ImageReconstructionEvaluation # Class defining the evaluation
       evaluate_on: valid
       n_pictures: 10
       sample_images: False
@@ -213,6 +243,11 @@ callbacks:
       evaluate_on: train
       n_samples: 2048
 ```
+To summarize, the log will consist of the following entries:
+- ImageReconstruction/Validation: reconstruction of images from the validation set, logged every 60 seconds
+- Samples: images sampled from the prior.
+- ELBO/Validation: Evidence LOwer Bound computed on the validation set 
+- ELBO/Train: Evidence LOwer Bound computed on the train set
 Further details regarding the `EvaluationCallback` utility class and the evaluation procedures can be found in the 
 [corresponding section](#callbacks)
 
@@ -493,6 +528,8 @@ The current implementation makes use of the Pytorch Ligthning [Checkpoint Callba
 with a [slight adaptation](code/callbacks/checkpoints.py) for Weight and Bias.
 Basic Checkpoint callbacks are added into the 'config/logging' configuration.
 
+TODO: Cumulative log callbacks
+
 ## Loggers
 Since, in the [original Pytorch Lightning implementation](https://pytorch-lightning.readthedocs.io/en/stable/common/loggers.html?highlight=loggers), 
 the code for logging differs across different loggers, we implement an extension of [TensorBoard](code/loggers/tensorboard.py)
@@ -532,9 +569,6 @@ the `config/device/laptop.yaml` files)
 trainer:
   checkpoint_callback: False    # Disable the default model checkpoints
 ```
-in which `# @package _global_` line is used to specify that `trainer` is a 
-[global key and not a local one](https://hydra.cc/docs/advanced/overriding_packages).
-
 Or by terminal when launching the train script
 ```bash
 python train.py experiment=MNIST_VAE +trainer.max_epochs=10

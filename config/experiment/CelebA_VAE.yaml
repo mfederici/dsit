@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - /model: VAE
   - /data: CelebA
   - /optimization: batch_ADAM
 
-architectures:
+model:
+  _tartet_: code.models.unsupervised.VariationalAutoencoder
   prior:
     _target_: code.architectures.base.DiagonalNormal
     z_dim: ${params.z_dim}
@@ -17,6 +17,7 @@ architectures:
     _target_: code.architectures.CelebA.Encoder
     layers: ${params.encoder_layers}
     z_dim: ${params.z_dim}
+  beta: ${params.beta}
 
 callbacks:
   - _target_: code.callbacks.EvaluationCallback

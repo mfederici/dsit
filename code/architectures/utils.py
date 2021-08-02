@@ -60,38 +60,6 @@ class Flatten(TransformModule):
         return output.view(-1, *self.shape)
 
 
-class InvertTransform(TransformModule):
-    def __init__(self, transform: Transform):
-        super(InvertTransform, self).__init__()
-
-        assert transform.bijective
-
-        self.bijective = True
-        self.domain = transform.codomain
-        self.codomain = transform.domain
-        self._inverse = transform._call
-        self._call = transform._inverse
-        self.transform = transform
-
-    def sign(self):
-        return self.transform.sign
-
-    def forward(self, x):
-        return self._inverse(x)
-
-    def _call(self, x):
-        return self.transform._inverse(x)
-
-    def _inverse(self, y):
-        return self.transform._call(y)
-
-    def log_abs_det_jacobian(self, x, y):
-        return -self.transform.log_abs_det_jacobian(y, x)
-
-    def __repr__(self):
-        return 'Invert(%s)' % self.transform.__repr__()
-
-
 class Reshape(TransformModule):
     domain = constraints.real_vector
     codomain = constraints.real_vector

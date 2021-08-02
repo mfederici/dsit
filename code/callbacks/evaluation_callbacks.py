@@ -80,11 +80,10 @@ class EvaluationCallback(pl.Callback):
 
 
 class LossItemsLogCallback(EvaluationCallback):
-    def __init__(self, log_every, mode='mean', pause_timers=False, log_end=True):
-        assert pause_timers is False
+    def __init__(self, log_every, mode='mean'):
         super(LossItemsLogCallback, self).__init__(pause_timers=False,
                                                    evaluate_every=log_every,
-                                                   log_end=log_end,
+                                                   log_end=True,
                                                    log_beginning=False,
                                                    name='Training',
                                                    evaluator=None)

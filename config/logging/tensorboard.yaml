@@ -7,3 +7,5 @@ trainer:
 extra_callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints
+  - _target_: code.callbacks.LossItemsLogCallback
+    log_every: 10 seconds
