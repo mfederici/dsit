@@ -1,9 +1,11 @@
 defaults:
   - device: ${oc.env:DEVICE_NAME}
-  - trainer: default
   - logging: wandb
 
 callbacks: []
+
+trainer:
+  _target_: pytorch_lightning.Trainer
 
 run:
   name: null

@@ -2,6 +2,9 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 
+from code.loggers import LogEntry
+from code.loggers.log_entry import SCALAR_ENTRY, SCALARS_ENTRY
+
 TRAIN_STR = 'train'
 VALID_STR = 'valid'
 TEST_STR = 'test'
@@ -9,7 +12,7 @@ STRS = [TRAIN_STR, TEST_STR, VALID_STR]
 
 
 class Evaluation:
-    def evaluate(self, optimization: pl.LightningModule):
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
         raise NotImplemented()
 
 
@@ -25,7 +28,7 @@ class DatasetEvaluation(Evaluation):
     def evaluate_batch(self, data, model):
         raise NotImplemented()
 
-    def evaluate(self, optimization: pl.LightningModule):
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
         if self.data_loader is None:
             num_workers = optimization.train_dataloader().num_workers
             self.data_loader = DataLoader(optimization.data[self.evaluate_on],
@@ -72,12 +75,12 @@ class DatasetEvaluation(Evaluation):
         if len(values) == 1:
             for k in values:
                 value = values[k]
-            return {
-                'type': 'scalar',  # Type of the logged object, to be interpreted by the logger
-                'value': value
-            }
+            return LogEntry(
+                data_type=SCALAR_ENTRY,
+                value=value
+            )
         else:
-            return {
-                'type': 'scalars',  # Type of the logged object, to be interpreted by the logger
-                'value': values
-            }
+            return LogEntry(
+                data_type=SCALARS_ENTRY,
+                value=values
+            )

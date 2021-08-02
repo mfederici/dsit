@@ -2,10 +2,12 @@ import pytorch_lightning as pl
 import time
 import numpy as np
 
+from code.loggers.log_entry import SCALARS_ENTRY, LogEntry
 from code.utils.time import TimeInterval
 
 
 class EvaluationCallback(pl.Callback):
+    # Only one unit is currently supported: `10 minutes 10 seconds` is not a valid value
     def __init__(self, name, evaluator, evaluate_every, log_end=True, log_beginning=True, pause_timers=True):
         self.timer = TimeInterval(evaluate_every)
         self._seconds = 0
@@ -26,8 +28,8 @@ class EvaluationCallback(pl.Callback):
                 if isinstance(callback, EvaluationCallback):
                     callback.stop_timer()
 
-        entry = self.evaluator.evaluate(pl_module)
-        trainer.logger.log(name=self.name, global_step=trainer.global_step, **entry)
+        log_entry = self.evaluator.evaluate(pl_module)
+        trainer.logger.log(name=self.name, global_step=trainer.global_step, log_entry=log_entry)
 
         if self.pause_timers:
             # Restart the timers
@@ -95,7 +97,11 @@ class LossItemsLogCallback(EvaluationCallback):
             entry = {name: np.mean(value) for name, value in self.outputs.items()}
         elif self.mode == 'last':
             entry = {name: value[-1] for name, value in self.outputs.items()}
-        trainer.logger.log(name=self.name, global_step=trainer.global_step, value=entry, type='scalars')
+        else:
+            raise NotImplemented()
+
+        log_entry = LogEntry(value=entry, data_type=SCALARS_ENTRY)
+        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step)
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         self.iterations = trainer.global_step

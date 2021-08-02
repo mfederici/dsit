@@ -2,6 +2,10 @@ import torch
 import numpy as np
 from torchvision.utils import make_grid
 from code.evaluation import Evaluation
+from code.loggers import LogEntry
+import pytorch_lightning as pl
+
+from code.loggers.log_entry import IMAGE_ENTRY
 
 
 class ImageReconstructionQualitativeEvaluation(Evaluation):
@@ -21,7 +25,7 @@ class ImageReconstructionQualitativeEvaluation(Evaluation):
 
         return images_batch
 
-    def evaluate(self, optimization):
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
         if self.dataset is None:
             self.dataset = optimization.data[self.evaluate_on]
 
@@ -31,7 +35,6 @@ class ImageReconstructionQualitativeEvaluation(Evaluation):
         if not hasattr(model, 'reconstruct'):
             raise Exception('The model %s must implement a reconstruct(x) method with `x` as a picture' %
                             (model.__class__.__name__))
-
 
         # If the images are not sampled dynamically, pick the first n_pictures from the dataset
         if not self.sample_images:
@@ -51,8 +54,8 @@ class ImageReconstructionQualitativeEvaluation(Evaluation):
         # Concatenate originals and reconstructions
         x_all = torch.cat([x.to('cpu'), x_rec], 2)
 
-        # Return a dictionary used for logging
-        return {
-            'type': 'figure',  # Type of the logged object, to be interpreted by the logger
-            'value': make_grid(x_all, nrow=self.n_pictures),  # Value to log
-        }
+        # return a LogEntry
+        return LogEntry(
+            data_type=IMAGE_ENTRY,                          # Type of the logged object, to be interpreted by the logger
+            value=make_grid(x_all, nrow=self.n_pictures)    # Value to log
+        )

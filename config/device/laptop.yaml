@@ -2,5 +2,8 @@ data_root: /data
 experiments_root: /tmp
 download_files: true
 num_workers: 8
-gpus: 0
 pin_memory: False
+
+# @package _global_
+trainer:
+  gpus: 0

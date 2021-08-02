@@ -3,5 +3,8 @@ big_data_root: /hddstore/data
 experiments_root: /hddstore
 download_files: true
 num_workers: 32
-gpus: 1
 pin_memory: True
+
+# @package _global_
+trainer:
+  gpus: 0

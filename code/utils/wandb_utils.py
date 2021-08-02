@@ -1,11 +1,13 @@
 import re
-from pytorch_lightning.callbacks import ModelCheckpoint
-import wandb
+from shutil import copytree
 import os
+import wandb
+import yaml
+from omegaconf import OmegaConf
 
-CHECKPOINT_FOLDER = 'checkpoints'
 SPLIT_TOKEN = '.'
 VAR_REGEX = '.*\${([a-z]|[A-Z]|_)+([a-z]|[A-Z]|[0-9]|\.|_)*}.*'
+KEYS_TO_EXCLUDE_FROM_CONFIG =['device', 'run', 'logger', 'callbacks', 'extra_callbacks']
 
 
 # utilities to flatten and re-inflate the configuration for wandb
@@ -35,9 +37,20 @@ def check_config(config, flat_config):
         assert sub_config[keys[-1]] == value
 
 
-class WandbModelCheckpoint(ModelCheckpoint):
-    def __init__(self, *args, **kwargs):
-        if not wandb.run:
-            raise Exception('Wandb has not been initialized. Please call wandb.init first.')
-        wandb_dir = wandb.run.dir
-        super(WandbModelCheckpoint, self).__init__(dirpath=os.path.join(wandb_dir, CHECKPOINT_FOLDER), *args, **kwargs)
+# Add the configuration to the experiment
+def add_config(experiment, conf):
+    # Create a dictionary with the unresolved configuration
+    unresolved_config = dict(yaml.safe_load(OmegaConf.to_yaml(conf, resolve=False)))
+    # Ignore some irrelevant configuration
+    unresolved_config = {k: v for k, v in unresolved_config.items() if not (k in KEYS_TO_EXCLUDE_FROM_CONFIG)}
+    # Flatten the configuration
+    flat_config = flatten_config(unresolved_config)
+
+    # Update the configuration
+    experiment.config.update(flat_config)
+
+    # Check for inconsistencies
+    check_config(conf, wandb.config)
+
+    # Copy hydra config into the files folder so that everything is stored
+    copytree('.hydra', os.path.join(experiment.dir, 'hydra'))

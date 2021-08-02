@@ -22,12 +22,15 @@ regarding hardware and paths.
 Here we report an example for a device configuration:
 ```yaml
 # Example of the content of config/device/<DEVICE_NAME>
-data_root: /ssdstore/data
-big_data_root: /hddstore/data
-experiments_root: /hddstore
-download_files: true
-num_workers: 32
-gpus: 4
+data_root: /ssdstore/data             # Path in which small dataset are stored
+big_data_root: /hddstore/data         # Path for the big ones
+experiments_root: /hddstore           # Location in which the experiments are stored
+download_files: true                  # Flag to specify if the device allows for downloading files
+num_workers: 32                       # Number of workers spawned for data-loading
+
+# @package _global_
+trainer:      # Accessing and changing the parameters of the Pytorch Ligthning trainer
+  gpus: 4     # Number of gpus used for training
 ```
 This setup allow easy deployment of the same code on different machines since all the hardware-dependent configuration 
 is grouped into the device `.yaml` configuration file. 
@@ -111,13 +114,13 @@ The configuration for each run is composed by the following main components:
 - [**params**](#hyper-parameters): collection of the model, architecture, optimization and data hyper-parameters (e.g. 
   number of layers, learning rate, batch size, regularization strength, ...). This design allows for easy definition of 
   [sweeps and hyper-parameter tuning](https://docs.wandb.ai/guides/sweeps).
-- [**callbacks**](#callbacks): the callbacks called during training. Different callbacks can be used for logging, evaluation
-  , model checkpointing or early stopping. 
+- [**trainer**](#trainer): Extra parameters passed to the [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- [**callbacks**](#callbacks): the callbacks called during training. Different callbacks can be used for logging, 
+[evaluation](#evaluation), [model checkpointing](#checkpoints) or early stopping. 
   See [the corresponding documentation](https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html) 
   for further details. Note that callbacks are fully optional.
 - [**device**](#device): Definition of the hardware-specific parameters (such as paths, CPU cores, number of GPUs)
-- [**logging**](#logging): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
-- [**trainer**](#trainer): Extra parameters passed to the [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- [**logger**](#loggers): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
 
 While `data`, `model`, `architectures`, `optimization procedure`, `parameters` and `callbacks` are experiment-specific, 
 `device`, `logging` and `training` define global properties of the device on which the experiments are running, 
@@ -276,12 +279,15 @@ class VariationalAutoencoder(GenerativeModel, RepresentationLearningModel):
         :param beta: trade-off between regularization and reconstruction coefficient
         '''
         super(VariationalAutoencoder, self).__init__()
-        self.beta = beta
+       
 
         # The data-dependent architectures are passed as parameters
         self.encoder = encoder
         self.decoder = decoder
         self.prior = prior
+        
+        # Store the value of the hyper-parameter beta
+        self.beta = beta
     
     # Definition of the procedure to compute reconstruction and regularization loss
     def compute_loss_components(self, data):
@@ -374,7 +380,7 @@ class Encoder(ConditionalDistribution):
             StochasticLinear(layers[-1], z_dim, 'Normal')   # A layer that returns a factorized Normal distribution
         )
 
-    def forward(self, x):
+    def forward(self, x) -> Distribution:
         # Note that the encoder returns a factorized normal distribution and not a vector
         return self.net(x)
 ```
@@ -406,7 +412,7 @@ class AdamBatchOptimization(pl.LightningModule):
         self.pin_memory = pin_memory
 
     # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(self.data['train'],
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
@@ -445,7 +451,111 @@ The `optimization.model` and `optimization.data` components point to `model` and
 
 ## Callbacks
 Each callback in `callbacks` must be an instance of a [Pytorch Lighning callback](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
-Callbacks are used for checkpointing, logging
+Callbacks are mainly used for checkpointing or logging.
+
+Here we include the implementation of a [customized callback for evaluation](code/callbacks/evaluation_callbacks.py) 
+that calls a specified evaluation metric any pre-definite amount of time (`evaluate_every`). This quantity can be specified
+in model `iterations` or `epochs`, or in `seconds`,`minutes`,`hours` or `days` for increased flexibility.
+This structure allows us to completely separate training and evaluation code. Another advantage is that the same evaluation
+metric can be used for different models and architectures.
+
 ### Evaluation
+Each evaluation metric is defined as an object that implements an `evaluate(optimization_procedure)` parameter that 
+receives the Pytorch Lightning Module defining the optimization procedure and returns a `LogEntry` object, which 
+specifies type of the entry and its value. Each evaluation metric is designed to be logger-agnostic (and data-agnostic
+when possible).
+
+Here we report the code for the evaluation procedure that is responsible for sampling and logging pictures
+for an image generative model (such as the VAE reported in the previous examples):
+```python
+class ImageSampleEvaluation(Evaluation):
+    def __init__(self, n_pictures=10, **kwargs):
+        self.n_pictures = n_pictures
+        self.kwargs = kwargs
+
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
+        model = optimization.model
+
+        assert isinstance(model, GenerativeModel)
+
+        x_gen = model.sample([self.n_pictures], **self.kwargs).to('cpu')
+
+        return LogEntry(
+            data_type=IMAGE_ENTRY,                          #Type of the logged object, to be interpreted by the logger
+            value=make_grid(x_gen, nrow=self.n_pictures)    # Value to log
+        )
+```
+The corresponding configuration is reported in the [experiment definition example](#defining-new-experiments) 
+defined in the previous section.
+
+### Checkpoints
+The current implementation makes use of the Pytorch Ligthning [Checkpoint Callback](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html)
+with a [slight adaptation](code/callbacks/checkpoints.py) for Weight and Bias.
+Basic Checkpoint callbacks are added into the 'config/logging' configuration.
+
+## Loggers
+Since, in the [original Pytorch Lightning implementation](https://pytorch-lightning.readthedocs.io/en/stable/common/loggers.html?highlight=loggers), 
+the code for logging differs across different loggers, we implement an extension of [TensorBoard](code/loggers/tensorboard.py)
+and [Weights a& Bias](code/loggers/wandb.py) loggers that exposes a unified interface `log( name, log_entry, global_timestap)`.
+The different `log_entry.data_type` are handled differently by different loggers. Currently only `scalar`, `scalars` and
+`image` are implemented, but the wraper can be easily extended for other data types.
+Here we report the example for the Wandb Logger wrapper:
+```python
+
+class WandbLogger(loggers.WandbLogger):
+  
+    def log(self, name: str, log_entry: LogEntry, global_step: int = None) -> None:
+        # single scalar
+        if log_entry.data_type == SCALAR_ENTRY:
+            self.experiment.log({name: log_entry.value, 'trainer/global_step': global_step})
+        # multiple scalars
+        elif log_entry.data_type == SCALARS_ENTRY:
+            entry = {'%s/%s' % (name, sub_name): v for sub_name, v in log_entry.value.items()}
+            entry['trainer/global_step'] = global_step
+            self.experiment.log(entry)
+        # Image
+        elif log_entry.data_type == IMAGE_ENTRY:
+            self.experiment.log(data={name: wandb.Image(log_entry.value)}, step=global_step)
+            plt.close(log_entry.value)
+        # You can add other data-types to the chain of elif
+        else:
+            raise Exception('Data type %s is not recognized by WandBLogWriter' % log_entry.data_type)
+```
+
+## Lightning Trainer
+The model training is based on the Pytorch Lightning Trainer, therefore all the corresponding parameters can be accessed
+and modified.
+This can be done from the configuration files (such as in the `config/logging/wandb.yaml` or 
+the `config/device/laptop.yaml` files)
+```yaml
+# @package _global_
+trainer:
+  checkpoint_callback: False    # Disable the default model checkpoints
+```
+in which `# @package _global_` line is used to specify that `trainer` is a 
+[global key and not a local one](https://hydra.cc/docs/advanced/overriding_packages).
+
+Or by terminal when launching the train script
+```bash
+python train.py experiment=MNIST_VAE +trainer.max_epochs=10
+```
+
 ## Device
-## Logging
+
+The device-specific configuration is defined in a separate `.yaml` configuration file in `config/device`, this include
+(but is not limited to) directories and hardware-specific options.
+The `device` configuration will be assigned depending on the environment variable 'DEVICE_NAME'.
+As an example, if `DEVICE_NAME` is set to `laptop`, the configuration in `config/laptop.yaml` will be used.
+
+This design allows us to define multiple devices (for deployment, training, testing) that are dynamically selected
+based on the local value of `DEVICE_NAME`. Adding a new configuration is as easy as creating a new `.yaml` file to the
+`config/device` folder and assigning the corresponding `DEVICE_NAME` on the device of interest.
+
+Note that the trainer-specific configuration (such as number of gpus, tpus, accelerators, ...) can be specified direcly
+from the device configuration using the following syntax:
+```yaml
+# @package _global_
+trainer:
+  gpus: 4
+  ...
+```
