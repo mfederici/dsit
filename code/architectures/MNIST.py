@@ -3,6 +3,7 @@ from code.architectures.utils import Flatten, StochasticLinear, Reshape, make_st
 from torch.distributions import Normal, Independent
 from code.models.base import ConditionalDistribution
 
+
 INPUT_SHAPE = [1, 28, 28]
 N_INPUTS = 28*28
 N_LABELS = 10
@@ -94,3 +95,4 @@ class Classifier(ConditionalDistribution):
     def forward(self, x):
         # Note that the encoder returns a factorized normal distribution and not a vector
         return self.net(x)
+

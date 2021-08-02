@@ -3,3 +3,4 @@ experiments_root: /tmp
 download_files: true
 num_workers: 8
 gpus: 0
+pin_memory: False

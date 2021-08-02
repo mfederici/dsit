@@ -4,3 +4,4 @@ experiments_root: /hddstore
 download_files: true
 num_workers: 32
 gpus: 1
+pin_memory: True

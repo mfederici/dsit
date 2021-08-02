@@ -7,11 +7,12 @@ from code.models.base import Model
 
 class AdamBatchOptimization(pl.LightningModule):
     def __init__(self,
-                 model: Model,
-                 data: dict,
-                 num_workers: int,
-                 batch_size: int,
-                 lr: float
+                 model: Model,              # The model to optimize
+                 data: dict,                # The dictionary of Datasets defined in the previous 'Data' section
+                 num_workers: int,          # Number of workers for the data_loader
+                 batch_size: int,           # Batch size
+                 lr: float,                 # Learning rate
+                 pin_memory: bool = True    # Flag to enable memory pinning
                  ):
         super(AdamBatchOptimization, self).__init__()
 
@@ -21,12 +22,15 @@ class AdamBatchOptimization(pl.LightningModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.lr = lr
+        self.pin_memory = pin_memory
 
+    # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self):
         return DataLoader(self.data['train'],
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
-                          shuffle=True)
+                          shuffle=True,
+                          pin_memory=self.pin_memory)
 
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         return self.model.compute_loss(data, data_idx)

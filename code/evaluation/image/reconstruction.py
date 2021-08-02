@@ -1,8 +1,7 @@
 import torch
 import numpy as np
 from torchvision.utils import make_grid
-
-from utils.evaluation import Evaluation
+from code.evaluation import Evaluation
 
 
 class ImageReconstructionQualitativeEvaluation(Evaluation):

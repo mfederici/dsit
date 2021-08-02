@@ -2,12 +2,15 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 
-from utils.evaluation import Evaluation
-
 TRAIN_STR = 'train'
 VALID_STR = 'valid'
 TEST_STR = 'test'
 STRS = [TRAIN_STR, TEST_STR, VALID_STR]
+
+
+class Evaluation:
+    def evaluate(self, optimization: pl.LightningModule):
+        raise NotImplemented()
 
 
 class DatasetEvaluation(Evaluation):

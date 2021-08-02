@@ -1,7 +1,7 @@
+import re
 from pytorch_lightning.callbacks import ModelCheckpoint
 import wandb
 import os
-import re
 
 CHECKPOINT_FOLDER = 'checkpoints'
 SPLIT_TOKEN = '.'

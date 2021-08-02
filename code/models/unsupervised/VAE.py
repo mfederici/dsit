@@ -1,9 +1,9 @@
 import torch
 from torch.distributions import Distribution
-from code.models.base import Model, ConditionalDistribution, MarginalDistribution
+from code.models.base import GenerativeModel, ConditionalDistribution, MarginalDistribution, RepresentationLearningModel
 
 
-class VariationalAutoencoder(Model):
+class VariationalAutoencoder(GenerativeModel, RepresentationLearningModel):
     def __init__(
             self,
             encoder: ConditionalDistribution,
@@ -31,12 +31,13 @@ class VariationalAutoencoder(Model):
     def compute_loss(self, data, data_idx):
         loss_components = self.compute_loss_components(data)
 
-        loss = loss_components['rec_loss'] + self.beta * loss_components['reg_loss']
+        loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']
 
         return {
-            'loss': loss,
-            'reconstruction_loss': loss_components['rec_loss'].item(),
-            'regularization_loss': loss_components['reg_loss'].item()
+            'loss': loss,  # The 'loss' key is used for gradient computation
+            'reconstruction': loss_components['reconstruction'].item(),
+            # The other keys are returned for logging purposes
+            'regularization': loss_components['regularization'].item()
         }
 
     def compute_loss_components(self, data):
@@ -59,7 +60,7 @@ class VariationalAutoencoder(Model):
         # KL(q(Z|X=x)||p(Z)) = E[log q(Z=z|X=x) - log p(Z=z)]
         reg_loss = torch.mean(q_z_given_x.log_prob(z) - self.prior().log_prob(z))
 
-        return {'rec_loss': rec_loss, 'reg_loss': reg_loss}
+        return {'reconstruction': rec_loss, 'regularization': reg_loss}
 
     def reconstruct(self, x, sample_latents=False, sample_output=False):
         # If specified sample the latent distribution
@@ -80,9 +81,9 @@ class VariationalAutoencoder(Model):
 
         return x_rec
 
-    def sample(self, n_items, sample_output=False):
+    def sample(self, sample_shape: torch.Size, sample_output=False):
         # Sample from the prior
-        z = self.prior.sample([n_items])
+        z = self.prior().sample(sample_shape)
 
         # Compute p(X|Z=z) for the given sample
         p_x_given_z = self.decoder(z)

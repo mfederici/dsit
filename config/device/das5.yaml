@@ -4,3 +4,4 @@ experiments_root: /var/scratch/{oc.env:USER}
 download_files: true
 num_workers: 32
 gpus: 4
+pin_memory: True

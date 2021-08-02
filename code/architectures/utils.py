@@ -1,8 +1,11 @@
+from abc import ABC
+
 import torch
 import torch.nn as nn
-from torch.distributions import Normal, Independent, Beta, Categorical, Bernoulli
-from pyro.distributions import Delta
+from torch.distributions import Normal, Independent, Beta, Categorical, Bernoulli, Transform
+from pyro.distributions import Delta, TransformModule, constraints
 from torch.nn.functional import softplus
+import numpy as np
 
 
 # Create simple layer stacks with relu activations
@@ -35,19 +38,92 @@ def make_cnn_deconv_stack(layers):
 
     return cnn_layers
 
+class Flatten(TransformModule):
+    def __init__(self):
+        super(Flatten, self).__init__()
+        self.shape = None
 
-class Flatten(nn.Module):
     def forward(self, input):
+        if self.shape is None:
+            self.shape = input.shape[1:]
+
+        assert self.shape == input.shape[1:]
         return input.view(input.shape[0], -1)
 
+    def log_abs_det_jacobian(self, x, y):
+        return 1
 
-class Reshape(nn.Module):
-    def __init__(self, shape):
+    def _call(self, x):
+        return self.forward(x)
+
+    def _inverse(self, output):
+        return output.view(-1, *self.shape)
+
+
+class InvertTransform(TransformModule):
+    def __init__(self, transform: Transform):
+        super(InvertTransform, self).__init__()
+
+        assert transform.bijective
+
+        self.bijective = True
+        self.domain = transform.codomain
+        self.codomain = transform.domain
+        self._inverse = transform._call
+        self._call = transform._inverse
+        self.transform = transform
+
+    def sign(self):
+        return self.transform.sign
+
+    def forward(self, x):
+        return self._inverse(x)
+
+    def _call(self, x):
+        return self.transform._inverse(x)
+
+    def _inverse(self, y):
+        return self.transform._call(y)
+
+    def log_abs_det_jacobian(self, x, y):
+        return -self.transform.log_abs_det_jacobian(y, x)
+
+    def __repr__(self):
+        return 'Invert(%s)' % self.transform.__repr__()
+
+
+class Reshape(TransformModule):
+    domain = constraints.real_vector
+    codomain = constraints.real_vector
+    bijective = True
+    sign = +1
+
+    def __init__(self, in_shape, out_shape, contiguous=False):
         super(Reshape, self).__init__()
-        self.shape = shape
+        assert np.prod(in_shape) == np.prod(out_shape)
+        self.in_shape = in_shape
+        self.out_shape = out_shape
+        self.contiguous = contiguous
 
     def forward(self, input):
-        return input.view(-1, *self.shape)
+        if self.contiguous:
+            return input.reshape(-1, *self.out_shape)
+        else:
+            return input.view(-1, *self.out_shape)
+
+    def log_abs_det_jacobian(self, x, y):
+        return torch.zeros(
+            x.size()[:-1], dtype=x.dtype, layout=x.layout, device=x.device
+        )
+
+    def _call(self, x):
+        return self.forward(x)
+
+    def _inverse(self, output):
+        if self.contiguous:
+            return output.reshape(-1, *self.in_shape)
+        else:
+            return output.view(-1, *self.in_shape)
 
 
 class Permute(nn.Module):

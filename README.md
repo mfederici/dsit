@@ -38,7 +38,7 @@ For [Weights & Bias](www.wandb.ai) logging run:
 wandb init
 ```
 and login with your credentials. This step is optional since [TensorBoard](https://www.tensorflow.org/tensorboard) 
-logging is also [implemented](#tensorboard_loggging).
+logging [is also implemented](#tensorboard_loggging).
 
 # Running experiments
 The CLI for training models is based on [Hydra](www.hydra.cc). See this 
@@ -93,24 +93,21 @@ The sweep can be created by running:
 wandb sweep sweeps/VAE_MNIST.yaml
 ```
 which will return the corresponding `<SWEEP_ID>.
-Agents will be then started with:
+Agents can then be started with:
 ```shell
-wandb agent <SWEEP_ID>
+wandb agent <WANDB_USER>/<WANDB_PROJECT>/<SWEEP_ID>
 ```
 # The run configuration
 The configuration for each run is composed by the following main components:
 - [**data**](#data): the data used for training the models. See section for further 
   information.
-- [**model**](#Models) : the model to train. Each model must implement all the architecture and data-agnostic logic regarding 
-  the loss computation (e.g. `VAE`, `GAN`, `VIB`, ...). Each model is an instance of a 
-  [Pytorch Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html).
+- [**model**](#Models) : the model to train. Each model must implement the logic regarding the loss computation 
+- (e.g. `VAE`, `GAN`, `VIB`, ...) and functionalities (e.g. `sample`, `reconstruct`, `classify`,...) in architecture and 
+  data-agnostic fashion. Each model is an instance of a [Pytorch Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html).
 - [**optimization**](#optimization-procedures): the procedure used for optimizing the model. Definition on how the model is updated by the optimizer 
   (e.g. standanrd step update, adversarial training, joint training of two models, optimizer type, batch-creation procedure). Each optimization procedure is an 
   instance of a [Lighning Module](https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html).
-- [**architectures**](#architectures): definition of the data-specific architectures used by the model. 
-  (e.g. `Encoder`, `Decoder` and `Prior`  for a VAE). Note that different model could make use of the same architectures
-  (e.g. both Variational Autoencoder and Variational Information Bottleneck can use the same 'Encoder'). Architectures
-  are also instances of Pytorch Modules.
+
 - [**params**](#hyper-parameters): collection of the model, architecture, optimization and data hyper-parameters (e.g. 
   number of layers, learning rate, batch size, regularization strength, ...). This design allows for easy definition of 
   [sweeps and hyper-parameter tuning](https://docs.wandb.ai/guides/sweeps).
@@ -122,9 +119,9 @@ The configuration for each run is composed by the following main components:
 - [**logging**](#logging): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
 - [**trainer**](#trainer): Extra parameters passed to the [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
 
-While data, model, architectures, optimization procedure, parameters and callbacks are experiment-specific, device, logging 
-and training define global properties of the device on which the experiments are running, the logging and training 
-procedures respectively.
+While `data`, `model`, `architectures`, `optimization procedure`, `parameters` and `callbacks` are experiment-specific, 
+`device`, `logging` and `training` define global properties of the device on which the experiments are running, 
+the logging and training procedures respectively.
 
 ## Defining new Experiments
 Each experiment `.yaml` configuration file contains a definition of data, model, architectures, optimization procedure, 
@@ -132,67 +129,82 @@ hyper-parameters and callbacks.
 Here we report an example for the 
 [Variational Autoencoder Model trained on the MNIST dataset](config/experiment/MNIST_VAE.yaml).
 
-First we refer to the `VAE` model, `MNIST` dataset and `batch_ADAM` optimization procedure defined in `config/model/VAE.yaml`,
-`config/data/MNIST.yaml`, and `config/optimization/batch_ADAM.yaml` respectively:
+First we refer to `MNIST` dataset and `batch_ADAM` optimization procedure defined in
+the [data](config/data/MNIST.yaml), and [optimization](config/optimization/batch_ADAM.yaml) configuration files respectively:
 ```yaml
 # @package _global_
 defaults:
-  - /model: VAE
   - /data: MNIST
   - /optimization: batch_ADAM
 ```
-The [VAE model](config/model/VAE.yaml) requires the definition of an `encoder`, `decoder` and `prior` architectures: 
+The [VAE model](code/models/unsupervised/VAE.py) requires the definition of an `encoder`, `decoder` and `prior` architectures: 
 ```yaml
-architectures:
-  prior:
-    _target_: code.architectures.base.DiagonalNormal
+model:
+  _target_: code.models.unsupervised.VariationalAutoencoder # class defining the VAE model
+  prior:                                                    # Prior distribution
+    _target_: code.architectures.base.DiagonalNormal        # class defining a Normal distribution with diagonal covariance
     z_dim: ${params.z_dim}
-  decoder:
-    _target_: code.architectures.MNIST.Decoder
-    z_dim: ${params.z_dim}
-    layers: ${params.decoder_layers}
-  encoder:
-    _target_: code.architectures.MNIST.Encoder
+  encoder:                                                  # Encoder architecture
+    _target_: code.architectures.MNIST.Encoder              
     layers: ${params.encoder_layers}
     z_dim: ${params.z_dim}
+  decoder:                                                  # Decoder architecture
+    _target_: code.architectures.MNIST.Decoder              
+    z_dim: ${params.z_dim}
+    layers: ${params.decoder_layers}
+  beta: ${params.beta}
 ```
 The `_target_` key contains references to the corresponding python classes, while the other values are passed to the 
 `__init__()` constructor on initialization.
 
-Note that instead of writing the value of the hyper-parameters (such as the number of latents `z_dim`) directly in the 
-architecture definition, we refer to the `params` section (e.g. `${params.z_dim}`) so that all the hyper-parameters of 
-model, architectures and optimization procedure are grouped together:
+Note that instead of writing the value of the hyper-parameters (such as the number of latents `z_dim` or regularization 
+strength `beta`) directly in the architecture definition, we refer to the `params` section (e.g. `${params.z_dim}`, 
+`${params.beta}`) so that all the hyper-parameters of model, architectures and optimization procedure are grouped together:
 ```yaml
-params:
-  z_dim: 64
-  beta: 0.5
-  lr: 1e-3
-  batch_size: 128
-  encoder_layers: [ 1024, 128 ]
-  decoder_layers: [ 128, 1024 ]
+params:                               # List of hyper-parameters
+  z_dim: 64                           # Number of latent dimensions
+  beta: 0.5                           # KL regularization strength
+  encoder_layers: [ 1024, 128 ]       # List of hidden layers for the encoder
+  decoder_layers: [ 128, 1024 ]       # and decoder architectures
+  lr: 1e-3                            # Learning rate
+  batch_size: 128                     # Batch size
 ```
 Lastly, a list of callbacks defines all the evaluation metrics that are logged during training:
 ```yaml
 callbacks:
-  - _target_: utils.callbacks.EvaluationCallback
-    name: ImageReconstruction/Validation
-    evaluate_every: 10 seconds
+  # Logging the validation image reconstructions 
+  - _target_: code.callbacks.EvaluationCallback      # Utility callback for evaluation that logs every 'evaluate_every'
+    name: ImageReconstruction/Validation              # Name reported in the log
+    evaluate_every: 60 seconds                        # Evaluation time (in seconds, minutes, hours, iterations or epochs)
     evaluator:
-      _target_: code.evaluation.reconstruction.ImageReconstructionQualitativeEvaluation
+      _target_: code.evaluation.reconstruction.ImageReconstructionQualitativeEvaluation # Class defining the evaluation
       evaluate_on: valid
       n_pictures: 10
       sample_images: False
       sample_latents: False
-  - _target_: utils.callbacks.EvaluationCallback
+      
+  # Logging the samples of the generative model
+  - _target_: code.callbacks.EvaluationCallback
+    name: Samples
+    evaluate_every: 60 seconds
+    evaluator:
+      _target_: code.evaluation.image.ImageSampleEvaluation
+      evaluate_on: valid
+      n_pictures: 10
+      
+  # Logging the value or the Evidence Lower BOund (ELBO) computed on the validation set
+  - _target_: code.callbacks.EvaluationCallback
     name: ELBO/Validation
-    evaluate_every: 10 seconds
+    evaluate_every: 30 seconds
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: valid
       n_samples: 2048
-  - _target_: utils.callbacks.EvaluationCallback
+  
+  # Logging the value or the Evidence Lower BOund (ELBO) computed on the train set
+  - _target_: code.callbacks.EvaluationCallback
     name: ELBO/Train
-    evaluate_every: 10 seconds
+    evaluate_every: 30 seconds
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: train
@@ -203,11 +215,237 @@ Further details regarding the `EvaluationCallback` utility class and the evaluat
 
 Further details regarding the aforementioned components can be found in the following sections
 # Creating new Implementations
+
+Adding new models, datasets and architectures to the frameworks requires implementing the code and creating the 
+corresponding configuration files.
+Here we report the conventions used to define the different components: 
+
 ## Data
+The datasets definition are collected in the [`data` configuration folder](config/data). Each data object consist
+of a dictionary specifying the parameters for the different splits. By default, we consider `train`, `valid`, and `test`
+for training, validation and testing purpose respectively. Different keys can be added to the `data` dictionary if necessary:
+```yaml
+# Content of /config/data/MNIST.yaml. the corresponding keys are added under `data`
+train:                                      # Definition of the training set
+  _target_: code.data.MNIST.MNISTWrapper    # Class
+  root: ${device.data_root}                 # Initialization parameters
+  split: train
+  download: ${device.download_files}
+
+valid:
+  _target_: code.data.MNIST.MNISTWrapper   # Definition of the validation split
+  root: ${device.data_root}
+  split: valid
+  download: ${device.download_files}
+
+test:
+  _target_: code.data.MNIST.MNISTWrapper   # Test split
+  root: ${device.data_root}
+  split: test
+  download: ${device.download_files}
+```
+Note that all the device-dependent parameters (such as the data directory and the flag to enable downloading)
+refer to the `${device}` variable. This allows to easily deploy the same model to different devices. Further details can
+be found in the [device section](#device).
+
+TorchVision, TorchAudio or other existing datasets class definitions can be referenced directly by specifying
+the appropriate `_target_` (e.g. `_target_: torchvision.datasets.MNIST` for the default torchvision MNIST dataset).
+
+The instantiated `data` dictionary is passed to the constructor of the [optimization procedure](#optimization-procedures),
+in which the data-loaders are defined.
+
 ## Models
-## Architectures 
+The model configuration defines the parameters and architectures used by the specific model (see example reported 
+[the previous section](#defining-new-experiments)). The model code is designed to be completely data-agnostic
+so that the same logic can be used across different experiments without any re-writing or patch.
+Here we report the example code for the `VariationalAutoencoder` [model](code/models/unsupervised/VAE.py):
+```python
+class VariationalAutoencoder(GenerativeModel, RepresentationLearningModel):
+    def __init__(
+            self,
+            encoder: ConditionalDistribution,
+            decoder: ConditionalDistribution,
+            prior: MarginalDistribution,
+            beta: float
+    ):
+        '''
+        Variational Autoencoder Model
+        :param encoder: the encoder architecture
+        :param decoder: the decoder architecture
+        :param prior: architecture representing the prior
+        :param beta: trade-off between regularization and reconstruction coefficient
+        '''
+        super(VariationalAutoencoder, self).__init__()
+        self.beta = beta
+
+        # The data-dependent architectures are passed as parameters
+        self.encoder = encoder
+        self.decoder = decoder
+        self.prior = prior
+    
+    # Definition of the procedure to compute reconstruction and regularization loss
+    def compute_loss_components(self, data):
+        x = data['x']
+
+        # Encode a batch of data
+        q_z_given_x = self.encoder(x)
+
+        # Sample the representation using the re-parametrization trick
+        z = q_z_given_x.rsample()
+
+        # Compute the reconstruction distribution
+        p_x_given_z = self.decoder(z)
+
+        # The reconstruction loss is the expected negative log-likelihood of the input
+        #  - E[log p(X=x|Z=z)]
+        rec_loss = - torch.mean(p_x_given_z.log_prob(x))
+
+        # The regularization loss is the KL-divergence between posterior and prior
+        # KL(q(Z|X=x)||p(Z)) = E[log q(Z=z|X=x) - log p(Z=z)]
+        reg_loss = torch.mean(q_z_given_x.log_prob(z) - self.prior().log_prob(z))
+
+        return {'reconstruction': rec_loss, 'regularization': reg_loss}
+    
+    # Function called by the optimization procedure to compute the loss for one batch
+    def compute_loss(self, data, data_idx):
+        loss_components = self.compute_loss_components(data)
+
+        loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']
+
+        return {
+            'loss': loss,                                               # The 'loss' key is used for gradient computation
+            'reconstruction': loss_components['reconstruction'].item(),  # The other keys are returned for logging purposes
+            'regularization': loss_components['regularization'].item()
+        }
+    
+    # Function implemented by representation learning models to define the encoding procedure
+    def encode(self, x) -> Distribution:
+        return self.encoder(x)
+    
+    # Function implemented by generative models to generate new samples
+    def sample(self, sample_shape: torch.Size = torch.Size([]), sample_output=False) -> torch.Tensor:
+        # Sample from the prior
+        z = self.prior().sample(sample_shape)
+
+        # Compute p(X|Z=z) for the given sample
+        p_x_given_z = self.decoder(z)
+
+        # Return mean or a sample from p(X|Z=z) depending on the sample_output flag
+        if sample_output:
+            x = p_x_given_z.sample()
+        else:
+            x = p_x_given_z.mean
+
+        return x
+```
+Modularity and re-usability are the key design principles that allow to re-use and read the model code in a completely
+task-agnostic fashion. All the task-dependent code is contained into the parameters (such as `encoder` and `decoder`) 
+that are passed to the model.
+
+### Architectures 
+Different architectures are implemented in the `code/architectures` folder. Each architecture is designed for a specific 
+role (e.g. `Encoder`, `Decoder`, `Predictor`, ...), as a result the same architecture can be used in multiple models.
+Since the architecture code is data-dependent, each dataset will correspond to a different set of architectures.
+
+Here we report the example for the `VariationalAutoencoder` `Encoder` on `MNIST`:
+```python
+INPUT_SHAPE = [1, 28, 28]
+N_INPUTS = 28*28
+N_LABELS = 10
+
+
+# Model for q(Z|X)
+class Encoder(ConditionalDistribution):
+    def __init__(self, z_dim: int, layers: list):
+        '''
+        Encoder network used to parametrize a conditional distribution
+        :param z_dim: number of dimensions for the latent distribution
+        :param layers: list describing the layers
+        '''
+        super(Encoder, self).__init__()
+
+        # Create a stack of layers with ReLU activations as specified
+        nn_layers = make_stack([N_INPUTS] + list(layers))
+
+        self.net = nn.Sequential(
+            Flatten(),                                      # Layer to flatten the input
+            *nn_layers,                                     # The previously created stack
+            nn.ReLU(True),                                  # A ReLU activation
+            StochasticLinear(layers[-1], z_dim, 'Normal')   # A layer that returns a factorized Normal distribution
+        )
+
+    def forward(self, x):
+        # Note that the encoder returns a factorized normal distribution and not a vector
+        return self.net(x)
+```
+
 ## Optimization procedures
+The optimization procedure is designed to contain the logic regarding how the model is updated over time.
+This includes the definition of optimizers, data-loaders and learning-rate schedulers.
+Once again, the optimization procedure is designed to be modular and model-agnostic. Here we report the example
+for the a [batch-based training procedure with the ADAM optimizer](code/optimization/batch_ADAM.py):
+```python
+# Each optimization procedure is a pytorch lightning module
+class AdamBatchOptimization(pl.LightningModule):
+    def __init__(self,
+                 model: Model,          # The model to optimize
+                 data: dict,            # The dictionary of Datasets defined in the previous 'Data' section
+                 num_workers: int,      # Number of workers for the data_loader
+                 batch_size: int,       # Batch size
+                 lr: float,              # Learning rate
+                 pin_memory: bool=True  # Flag to enable memory pinning
+                 ):
+        super(AdamBatchOptimization, self).__init__()
+
+        self.model = model
+        self.data = data
+
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.lr = lr
+        self.pin_memory = pin_memory
+
+    # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
+    def train_dataloader(self):
+        return DataLoader(self.data['train'],
+                          batch_size=self.batch_size,
+                          num_workers=self.num_workers,
+                          shuffle=True,
+                          pin_memory=self.pin_memory)
+
+    # The training step simply returns the computation from the model
+    def training_step(self, data, data_idx) -> STEP_OUTPUT:
+        return self.model.compute_loss(data, data_idx)
+    
+    # Instantiate the Adam optimizer passing the model trainable parameters
+    def configure_optimizers(self):
+        return Adam(self.model.parameters(), lr=self.lr)
+```
+Each optimization procedure is a Pytorch Ligthning module, therefore it is possible to extend all the corresponding
+ [functions](https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html) for customized 
+training/data loading.
+
+The corresponding [configuration file](config/optimization/batch_ADAM.yaml) simply defines the references for the
+parameters of the constructor:
+```yaml
+_target_: code.optimization.batch_ADAM.AdamBatchOptimization
+
+model: ${model}
+data: ${data}
+lr: ${params.lr}
+num_workers: ${device.num_workers}
+batch_size: ${params.batch_size}
+pin_memory: ${device.pin_memory}
+```
+Once again the device-specic configuration refers the `device` component, while hyper-parameters point to the components
+of `params`.
+
+The `optimization.model` and `optimization.data` components point to `model` and `data` global keys respectively, as defined in the
+[data](#data) and [model](#models) sections.
+
 ## Callbacks
+Each callback in `callbacks` must be an instance of a [Pytorch Lighning callback](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
+Callbacks are used for checkpointing, logging
 ### Evaluation
 ## Device
 ## Logging

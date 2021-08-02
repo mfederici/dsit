@@ -1,6 +1,0 @@
-_target_: code.models.VIB.VariationalInformationBottleneck
-
-prior: ${architectures.prior}
-predictor: ${architectures.predictor}
-encoder: ${architectures.encoder}
-beta: ${params.beta}

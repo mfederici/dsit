@@ -1,4 +1,4 @@
-from code.evaluation.base import DatasetEvaluation
+from code.evaluation import DatasetEvaluation
 import torch
 
 

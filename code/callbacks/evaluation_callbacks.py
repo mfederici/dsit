@@ -1,9 +1,8 @@
 import pytorch_lightning as pl
-import numpy as np
 import time
-from typing import Any
+import numpy as np
 
-from utils.time import TimeInterval
+from code.utils.time import TimeInterval
 
 
 class EvaluationCallback(pl.Callback):
@@ -65,7 +64,7 @@ class EvaluationCallback(pl.Callback):
         else:
             return super().__getattribute__(item)
 
-    def on_batch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         self.iterations = trainer.global_step
         self.epochs = pl_module.current_epoch
 
@@ -78,7 +77,35 @@ class EvaluationCallback(pl.Callback):
             self.evaluate(pl_module, trainer)
 
 
-class LossItemsLogCallback(pl.Callback):
+class LossItemsLogCallback(EvaluationCallback):
+    def __init__(self, log_every, mode='mean', pause_timers=False, log_end=True):
+        assert pause_timers is False
+        super(LossItemsLogCallback, self).__init__(pause_timers=False,
+                                                   evaluate_every=log_every,
+                                                   log_end=log_end,
+                                                   log_beginning=False,
+                                                   name='Training',
+                                                   evaluator=None)
+        self.outputs = {}
+        self.mode = mode
+        assert mode in ['mean', 'last']
+
+    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
+        if self.mode == 'mean':
+            entry = {name: np.mean(value) for name, value in self.outputs.items()}
+        elif self.mode == 'last':
+            entry = {name: value[-1] for name, value in self.outputs.items()}
+        trainer.logger.log(name=self.name, global_step=trainer.global_step, value=entry, type='scalars')
+
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        for key, value in outputs.items():
-            pl_module.log('Train/%s' % key, value)
+        self.iterations = trainer.global_step
+        self.epochs = pl_module.current_epoch
+
+        for name, value in outputs.items():
+            if not name in self.outputs:
+                self.outputs[name] = []
+            self.outputs[name].append(value)
+
+        if self.timer.is_time(self):
+            self.timer.update(self)
+            self.evaluate(pl_module, trainer)

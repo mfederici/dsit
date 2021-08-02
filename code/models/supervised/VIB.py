@@ -24,12 +24,12 @@ class VariationalInformationBottleneck(Model):
     def compute_loss(self, data, data_idx):
         loss_components = self.compute_loss_components(data)
 
-        loss = loss_components['rec_loss'] + self.beta * loss_components['reg_loss']
+        loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']
 
         return {
             'loss': loss,
-            'reconstruction_loss': loss_components['rec_loss'].item(),
-            'regularization_loss': loss_components['reg_loss'].item()
+            'reconstruction': loss_components['reconstruction'].item(),
+            'regularization': loss_components['regularization'].item()
         }
 
     def compute_loss_components(self, data):
@@ -53,7 +53,7 @@ class VariationalInformationBottleneck(Model):
         # KL(q(Z|X=x)||p(Z)) = E[log q(Z=z|X=x) - log p(Z=z)]
         reg_loss = torch.mean(q_z_given_x.log_prob(z) - self.prior().log_prob(z))
 
-        return {'rec_loss': rec_loss, 'reg_loss': reg_loss}
+        return {'reconstruction': rec_loss, 'regularization': reg_loss}
 
     def encode(self, x) -> Distribution:
         return self.encoder(x)

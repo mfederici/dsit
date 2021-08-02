@@ -1,4 +1,4 @@
-from code.evaluation.base import DatasetEvaluation
+from code.evaluation import DatasetEvaluation
 
 
 class ErrorComponentsEvaluation(DatasetEvaluation):
@@ -6,7 +6,8 @@ class ErrorComponentsEvaluation(DatasetEvaluation):
         return model.compute_loss_components(data)
 
 
-class ELBOEvaluation(ErrorComponentsEvaluation):
+class ELBOEvaluation(DatasetEvaluation):
     def evaluate_batch(self, data, model):
+
         loss_components = model.compute_loss_components(data)
-        return {'ELBO': -(loss_components['rec_loss'] + loss_components['reg_loss'])}
+        return {'ELBO': -(loss_components['reconstruction'] + loss_components['regularization'])}

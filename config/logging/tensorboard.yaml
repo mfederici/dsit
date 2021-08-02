@@ -1,7 +1,9 @@
 # @package _global_
 logger:
-  _target_: utils.loggers.TensorBoardLogger
+  _target_: code.loggers.TensorBoardLogger
   save_dir: ${run.dir}
+trainer:
+  checkpoint_callback: False
 extra_callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints

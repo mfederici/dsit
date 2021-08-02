@@ -1,0 +1,30 @@
+# @package _global_
+defaults:
+  - /data: MNIST
+  - /optimization: batch_ADAM
+
+model:
+  _target_: code.models.unsupervised.Flow
+  base_distribution:
+    _target_: code.architectures.MNIST.DiagonalNormal
+  transforms:
+    - _target_: pyro.distributions.transforms.householder
+      input_dim: 784
+    - _target_: code.architectures.utils.Reshape
+      in_shape: [784]
+      out_shape: [1,28,28]
+
+callbacks:
+  - _target_: code.callbacks.LossItemsLogCallback
+    log_every: 10 seconds
+  - _target_: code.callbacks.EvaluationCallback
+    name: Samples
+    evaluate_every: 60 seconds
+    evaluator:
+      _target_: code.evaluation.image.ImageSampleEvaluation
+      evaluate_on: valid
+      n_pictures: 10
+
+params:
+  lr: 1e-3
+  batch_size: 16

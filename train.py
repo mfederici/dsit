@@ -7,7 +7,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import WandbLogger
 import wandb
 import yaml
-from utils.wandb_utils import flatten_config, check_config
+from code.utils.wandb_utils import flatten_config, check_config
 from pytorch_lightning import seed_everything
 
 
