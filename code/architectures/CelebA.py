@@ -37,7 +37,7 @@ class Decoder(ConditionalDistribution):
         cnn_layers = make_cnn_deconv_stack(layers)
 
         self.net = nn.Sequential(
-            Reshape([z_dim, 1, 1]),
+            Reshape([z_dim], [z_dim, 1, 1]),
             nn.Conv2d(in_channels=z_dim, out_channels=layers[0]['in_channels'], kernel_size=1),
             * cnn_layers                 # The previously created stack
         )
