@@ -33,7 +33,10 @@ class AdamBatchOptimization(pl.LightningModule):
                           pin_memory=self.pin_memory)
 
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
-        return self.model.compute_loss(data, data_idx)
+        loss_items = self.model.compute_loss(data, data_idx)
+        for name, value in loss_items.items():
+            self.log('Train/%s' % name, value)
+        return loss_items
 
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.lr)

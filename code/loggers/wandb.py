@@ -2,8 +2,7 @@ import pytorch_lightning.loggers as loggers
 import matplotlib.pyplot as plt
 import wandb
 
-from code.loggers import LogEntry
-from code.loggers.log_entry import IMAGE_ENTRY, SCALARS_ENTRY, SCALAR_ENTRY
+from code.loggers.log_entry import LogEntry, IMAGE_ENTRY, SCALARS_ENTRY, SCALAR_ENTRY
 
 
 class WandbLogger(loggers.WandbLogger):

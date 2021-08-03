@@ -7,7 +7,6 @@ trainer:
     name: ${run.name}
     save_dir: ${run.dir}
 extra_callbacks:
-  - _target_: code.callbacks.checkpoints.wandb_utils.WandbModelCheckpoint
-  - _target_: code.callbacks.LossItemsLogCallback
-    log_every: 10 seconds
+  - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
+
 

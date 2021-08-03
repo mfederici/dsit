@@ -20,20 +20,19 @@ model:
 
 callbacks:
   - _target_: code.callbacks.EvaluationCallback
-    name: ImageReconstruction/Validation
+    name: Images/Reconstruction
     evaluate_every: 60 seconds
     evaluator:
-      _target_: code.evaluation.image.ImageReconstructionQualitativeEvaluation
+      _target_: code.evaluation.image.ImageReconstructionEvaluation
       evaluate_on: valid
       n_pictures: 10
       sample_images: False
       sample_latents: False
   - _target_: code.callbacks.EvaluationCallback
-    name: Samples
+    name: Images/Samples
     evaluate_every: 60 seconds
     evaluator:
       _target_: code.evaluation.image.ImageSampleEvaluation
-      evaluate_on: valid
       n_pictures: 10
   - _target_: code.callbacks.EvaluationCallback
     name: ELBO/Validation
@@ -49,8 +48,6 @@ callbacks:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: train
       n_samples: 2048
-  - _target_: code.callbacks.LossItemsLogCallback
-    log_every: 10 seconds
 
 params:
   z_dim: 64

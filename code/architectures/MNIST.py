@@ -44,7 +44,7 @@ class Decoder(ConditionalDistribution):
 
         self.net = nn.Sequential(
             *nn_layers,                 # The previously created stack
-            Reshape(INPUT_SHAPE)        # A layer to reshape to the correct image shape
+            Reshape([N_INPUTS], INPUT_SHAPE)        # A layer to reshape to the correct image shape
         )
         self.sigma = sigma
 

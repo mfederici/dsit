@@ -130,8 +130,8 @@ wandb agent <WANDB_USER>/<WANDB_PROJECT>/<SWEEP_ID>
 The configuration for each run is composed by the following main components:
 - [**data**](#data): the data used for training the models. See section for further 
   information.
-- [**model**](#Models) : the model to train. Each model must implement the logic regarding the loss computation 
-- (e.g. `VAE`, `GAN`, `VIB`, ...) and functionalities (e.g. `sample`, `reconstruct`, `classify`,...) in architecture and 
+- [**model**](#Models) : the model to train. Each model must implement the logic regarding the loss computation
+(e.g. `VAE`, `GAN`, `VIB`, ...) and functionalities (e.g. `sample`, `reconstruct`, `classify`,...) in architecture and 
   data-agnostic fashion. Each model is an instance of a [Pytorch Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html).
 - [**optimization**](#optimization-procedures): the procedure used for optimizing the model. Definition on how the model is updated by the optimizer 
   (e.g. standanrd step update, adversarial training, joint training of two models, optimizer type, batch-creation procedure). Each optimization procedure is an 
@@ -147,8 +147,9 @@ The configuration for each run is composed by the following main components:
   for further details. Note that callbacks are fully optional.
 - [**device**](#device): Definition of the hardware-specific parameters (such as paths, CPU cores, number of GPUs)
 - [**logger**](#loggers): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
+- [**run**](#run-details): Properties of the run such as name and the corresponding project
 
-While `data`, `model`, `architectures`, `optimization procedure`, `parameters` and `callbacks` are experiment-specific, 
+While `data`, `model`, `architectures`, `optimization procedure`, `parameters`, `callbacks` and `run` are experiment-specific, 
 `device`, `logging` and `trainer` define global properties of the device on which the experiments are running, 
 the logging and training parameters respectively.
 
@@ -207,7 +208,7 @@ Lastly, a list of callbacks defines all the evaluation metrics that are logged d
 callbacks:
   # Logging the validation image reconstructions 
   - _target_: code.callbacks.EvaluationCallback      # Utility callback for evaluation that logs every 'evaluate_every'
-    name: ImageReconstruction/Validation              # Name reported in the log
+    name: Images/Reconstruction              # Name reported in the log
     evaluate_every: 60 seconds                        # Evaluation time (in seconds, minutes, hours, iterations or epochs)
     evaluator:
       _target_: code.evaluation.image.ImageReconstructionEvaluation # Class defining the evaluation
@@ -218,7 +219,7 @@ callbacks:
       
   # Logging the samples of the generative model
   - _target_: code.callbacks.EvaluationCallback
-    name: Samples
+    name: Images/Samples
     evaluate_every: 60 seconds
     evaluator:
       _target_: code.evaluation.image.ImageSampleEvaluation
@@ -251,7 +252,13 @@ To summarize, the log will consist of the following entries:
 Further details regarding the `EvaluationCallback` utility class and the evaluation procedures can be found in the 
 [corresponding section](#callbacks)
 
-Further details regarding the aforementioned components can be found in the following sections
+Lastly we specify a name for the project in which the run will be saved:
+```yaml
+run:
+  project: VAE_experiments
+```
+
+Further details regarding the aforementioned configuration components can be found in the following sections
 # Creating new Implementations
 
 Adding new models, datasets and architectures to the frameworks requires implementing the code and creating the 
@@ -454,9 +461,16 @@ class AdamBatchOptimization(pl.LightningModule):
                           shuffle=True,
                           pin_memory=self.pin_memory)
 
-    # The training step simply returns the computation from the model
+    # The training step simply returns the computation from the model after logging its entries
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
-        return self.model.compute_loss(data, data_idx)
+        # Compute the loss using the compute_loss function from the model
+        loss_items = self.model.compute_loss(data, data_idx)
+        
+        # Log the loss components
+        for name, value in loss_items.items():
+            self.log('Train/%s' % name, value)
+        
+        return loss_items
     
     # Instantiate the Adam optimizer passing the model trainable parameters
     def configure_optimizers(self):
@@ -488,11 +502,14 @@ The `optimization.model` and `optimization.data` components point to `model` and
 Each callback in `callbacks` must be an instance of a [Pytorch Lighning callback](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
 Callbacks are mainly used for checkpointing or logging.
 
-Here we include the implementation of a [customized callback for evaluation](code/callbacks/evaluation_callbacks.py) 
-that calls a specified evaluation metric any pre-definite amount of time (`evaluate_every`). This quantity can be specified
+Here we include the implementation of a [customized callback for evaluation](code/callbacks/evaluation_callbacks.py)
+named `EvaluationCallback` that calls a specified evaluation metric any pre-definite amount of time (`evaluate_every`). This quantity can be specified
 in model `iterations` or `epochs`, or in `seconds`,`minutes`,`hours` or `days` for increased flexibility.
 This structure allows us to completely separate training and evaluation code. Another advantage is that the same evaluation
 metric can be used for different models and architectures.
+
+Additional callbacks can be used for [early stopping](https://pytorch-lightning.readthedocs.io/en/latest/common/early_stopping.html)
+or other custom functions that need to act on the optimization procedure, model or its components.
 
 ### Evaluation
 Each evaluation metric is defined as an object that implements an `evaluate(optimization_procedure)` parameter that 
@@ -528,7 +545,7 @@ The current implementation makes use of the Pytorch Ligthning [Checkpoint Callba
 with a [slight adaptation](code/callbacks/checkpoints.py) for Weight and Bias.
 Basic Checkpoint callbacks are added into the 'config/logging' configuration.
 
-TODO: Cumulative log callbacks
+
 
 ## Loggers
 Since, in the [original Pytorch Lightning implementation](https://pytorch-lightning.readthedocs.io/en/stable/common/loggers.html?highlight=loggers), 
@@ -591,5 +608,10 @@ from the device configuration using the following syntax:
 # @package _global_
 trainer:
   gpus: 4
-  ...
+  accelerator: ddp
 ```
+
+## Run Details
+The run configuration object is used to define the name associated to the run (`run.name`) and the name of the 
+corresponding project (`run.project`). These properties can be accessed and modified form the command line
+or by specifying them in the experiment definition.
