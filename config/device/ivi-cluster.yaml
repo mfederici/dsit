@@ -4,7 +4,7 @@ trainer:
 
 device:
   data_root: /ssdstore
-  experiments_root: /hddstore
+  experiments_root: /hddstore/datasets
   download_files: False
   num_workers: 32
   pin_memory: True

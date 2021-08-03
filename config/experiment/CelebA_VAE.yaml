@@ -4,7 +4,7 @@ defaults:
   - /optimization: batch_ADAM
 
 model:
-  _tartet_: code.models.unsupervised.VariationalAutoencoder
+  _target_: code.models.unsupervised.VariationalAutoencoder
   prior:
     _target_: code.architectures.base.DiagonalNormal
     z_dim: ${params.z_dim}
