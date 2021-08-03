@@ -61,7 +61,7 @@ class ImageLandmarksEvaluation(Evaluation):
         f, ax = plt.subplots(1, self.n_pictures, figsize=(5*self.n_pictures,5))
 
         for i in range(self.n_pictures):
-            ax[i].imshow(x[i].permute(1, 2, 0) )
+            ax[i].imshow(x[i].permute(1, 2, 0).data.to('cpu') )
             mu = p_y_given_x.mean[i].to('cpu').reshape(-1, 2).data.to('cpu')
             sigma = p_y_given_x.stddev[i].to('cpu').reshape(-1, 2).data.to('cpu')
             ax[i].plot(mu[:, 0] + self.padding[0],
