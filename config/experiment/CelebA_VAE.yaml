@@ -41,6 +41,7 @@ callbacks:
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: valid
+      batch_size: 64
       n_samples: 2048
   - _target_: code.callbacks.EvaluationCallback
     name: ELBO/Train
@@ -48,6 +49,7 @@ callbacks:
     evaluator:
       _target_: code.evaluation.elbo.ELBOEvaluation
       evaluate_on: train
+      batch_size: 64
       n_samples: 2048
 
 params:

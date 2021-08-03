@@ -17,7 +17,7 @@ class Evaluation:
 
 
 class DatasetEvaluation(Evaluation):
-    def __init__(self, evaluate_on=VALID_STR, n_samples=2048, batch_size=256, shuffle=False):
+    def __init__(self, evaluate_on=VALID_STR, n_samples=2048, batch_size=64, shuffle=False):
         self.data_loader = None
         self.evaluate_on = evaluate_on
         self.n_samples = n_samples
