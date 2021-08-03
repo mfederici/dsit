@@ -1,3 +1,4 @@
+import torch
 from torchvision.utils import make_grid
 from code.evaluation import Evaluation
 from code.loggers import LogEntry
@@ -16,7 +17,8 @@ class ImageSampleEvaluation(Evaluation):
 
         assert isinstance(model, GenerativeModel)
 
-        x_gen = model.sample([self.n_pictures], **self.sampling_params).to('cpu')
+        with torch.no_grad():
+            x_gen = model.sample([self.n_pictures], **self.sampling_params).to('cpu')
 
         return LogEntry(
             data_type=IMAGE_ENTRY,                          #Type of the logged object, to be interpreted by the logger

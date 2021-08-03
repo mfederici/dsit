@@ -48,11 +48,12 @@ class ImageReconstructionEvaluation(Evaluation):
         device = next(model.parameters()).device
         x = x.to(device)
 
-        # Compute the reconstructions
-        x_rec = model.reconstruct(x).to('cpu')
+        with torch.no_grad():
+            # Compute the reconstructions
+            x_rec = model.reconstruct(x).to('cpu')
 
-        # Concatenate originals and reconstructions
-        x_all = torch.cat([x.to('cpu'), x_rec], 2)
+            # Concatenate originals and reconstructions
+            x_all = torch.cat([x.to('cpu'), x_rec], 2)
 
         # return a LogEntry
         return LogEntry(
