@@ -252,10 +252,16 @@ To summarize, the log will consist of the following entries:
 Further details regarding the `EvaluationCallback` utility class and the evaluation procedures can be found in the 
 [corresponding section](#callbacks)
 
-Lastly we specify a name for the project in which the run will be saved:
+We specify a name for the project in which the run will be saved (with will correspond to `WANDB_PROJECT` in case of 
+Weights & Bias logging):
 ```yaml
 run:
   project: VAE_experiments
+```
+
+Lastly, we can define a run seed:
+```yaml
+seed: 42
 ```
 
 Further details regarding the aforementioned configuration components can be found in the following sections

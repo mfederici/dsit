@@ -41,6 +41,17 @@ callbacks:
       _target_: code.evaluation.elbo.ErrorComponentsEvaluation
       evaluate_on: train
       n_samples: 2048
+  - _target_: code.callbacks.EvaluationCallback
+    name: Images/Landmarks
+    evaluate_every: 20 seconds
+    evaluator:
+      _target_: code.evaluation.image.ImageLandmarksEvaluation
+      evaluate_on: valid
+      n_pictures: 10
+      sample_images: False
+      sample_latents: False
+      padding: [20, 0]
+
 
 params:
   z_dim: 64
@@ -69,3 +80,8 @@ params:
       kernel_size: 2
       stride: 1
   landmark_predictor_layers: [1024, 128, 32]
+
+run:
+  project: VAE_experiments
+
+seed: 42

@@ -32,7 +32,6 @@ def parse(conf: DictConfig):
     optimization = instantiate(conf.optimization)
 
     print(optimization)
-    print(trainer.callbacks)
 
     trainer.fit(optimization)
 
