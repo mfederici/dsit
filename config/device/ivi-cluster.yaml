@@ -1,9 +1,11 @@
-data_root: /ssdstore
-experiments_root: /hddstore
-download_files: False
-num_workers: 32
-pin_memory: True
-
 # @package _global_
 trainer:
   gpus: 1
+
+device:
+  data_root: /ssdstore
+  experiments_root: /hddstore
+  download_files: False
+  num_workers: 32
+  pin_memory: True
+
