@@ -1,4 +1,4 @@
-data_root: ${oc.env:USER}/home/datasets
+data_root: ${oc.env:HOME}/datasets
 experiments_root: /hddstore
 download_files: true
 num_workers: 32
