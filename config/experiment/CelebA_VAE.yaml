@@ -54,7 +54,7 @@ params:
   z_dim: 64
   beta: 0.5
   lr: 1e-3
-  batch_size: 32
+  batch_size: 64
   sigma: 0.1
   encoder_layers:
     - in_channels: 3
