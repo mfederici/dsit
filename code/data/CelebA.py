@@ -1,11 +1,14 @@
 from torchvision.datasets import CelebA
 from torchvision.transforms import ToTensor, CenterCrop, Compose
 from torch.utils.data import Dataset
-
+import os
 
 class CelebAWrapper(Dataset):
     def __init__(self, root, split, **params):
         assert split in ['train', 'valid', 'test']
+
+        print(root)
+        print(os.listdir(root))
 
         dataset = CelebA(
             root=root,

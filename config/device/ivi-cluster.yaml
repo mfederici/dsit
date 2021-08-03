@@ -1,6 +1,6 @@
 data_root: ${oc.env:HOME}/datasets
 experiments_root: /hddstore
-download_files: true
+download_files: False
 num_workers: 32
 pin_memory: True
 
