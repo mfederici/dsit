@@ -24,7 +24,7 @@ callbacks:
     name: ImageReconstruction/Validation
     evaluate_every: 2 minutes
     evaluator:
-      _target_: code.evaluation.reconstruction.ImageReconstructionEvaluation
+      _target_: code.evaluation.image.ImageReconstructionEvaluation
       evaluate_on: valid
       n_pictures: 10
       sample_images: False
