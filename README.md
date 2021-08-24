@@ -26,13 +26,13 @@ can be used with different models, and the same optimization procedure can be us
 
 # Installing
 ## Conda environment
-Create a new `frame` environment using conda:
+Create a new `dl-kit` environment using conda:
 ```shell
 conda env create -f environment.yml
 ```
 and activate it:
 ```shell
-conda activate frame
+conda activate dl-kit
 ```
 
 ## Naming the device
@@ -58,8 +58,8 @@ num_workers: 32                       # Number of workers spawned for data-loadi
 trainer:      # Accessing and changing the parameters of the Pytorch Ligthning trainer
   gpus: 4     # Number of gpus used for training
 ```
-With this setup, the same code on different machines since all the hardware-dependent configuration 
-is grouped into the device `.yaml` configuration file. 
+With this setup, the same code can be used on different machines since all the hardware-dependent configuration 
+is grouped into the device `.yaml` configuration file. Further details can be found in the [device section](#device)
 
 ## Weights & Bias logging
 For [Weights & Bias](www.wandb.ai) logging run:
@@ -167,7 +167,7 @@ defaults:
   - /data: MNIST
   - /optimization: batch_ADAM
 ```
-in which `# @package _global_` line is used to specify that the specified keys are global, while `defaults` specifies 
+The `# @package _global_` line is used to indicate that the following keys are global, while `defaults` specifies 
 the values for `data` and `optimization` procedures respectively. Further information regarding
 configuration packages and overrides can be found [here](https://hydra.cc/docs/advanced/overriding_packages).
 
@@ -175,18 +175,22 @@ The [VAE model](code/models/unsupervised/VAE.py) requires the definition of an `
 ```yaml
 model:
   _target_: code.models.unsupervised.VariationalAutoencoder # class defining the VAE model
+  beta: ${params.beta}                                      # read the regularization strength beta from params.beta
+  
   prior:                                                    # Prior distribution
     _target_: code.architectures.base.DiagonalNormal        # class defining a Normal distribution with diagonal covariance
-    z_dim: ${params.z_dim}
+    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim 
+
   encoder:                                                  # Encoder architecture
     _target_: code.architectures.MNIST.Encoder              
-    layers: ${params.encoder_layers}
-    z_dim: ${params.z_dim}
+    layers: ${params.encoder_layers}                        # read the layers from params.encoder_layers
+    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim
+    
   decoder:                                                  # Decoder architecture
-    _target_: code.architectures.MNIST.Decoder              
-    z_dim: ${params.z_dim}
-    layers: ${params.decoder_layers}
-  beta: ${params.beta}
+    _target_: code.architectures.MNIST.Decoder
+    layers: ${params.decoder_layers}                        # read the layers from params.encoder_layers
+    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim
+
 ```
 The `_target_` key contains references to Python classes, while the other values are passed to the 
 `__init__()` constructor on initialization (e.g. `Encoder(layers, z_dim)` is called when instantiating the encoder architecture).
@@ -498,11 +502,11 @@ num_workers: ${device.num_workers}
 batch_size: ${params.batch_size}
 pin_memory: ${device.pin_memory}
 ```
-Once again the device-specic configuration refers the `device` component, while hyper-parameters point to the components
-of `params`.
+Once again the device-specic configuration refers to the `device` component, while hyper-parameters point to the values
+in `params`.
 
-The `optimization.model` and `optimization.data` components point to `model` and `data` global keys respectively, as defined in the
-[data](#data) and [model](#models) sections.
+The `optimization.model` and `optimization.data` components point to `model` and `data` global keys respectively, which 
+are defined in the [data](#data) and [model](#models) sections.
 
 ## Callbacks
 Each callback in `callbacks` must be an instance of a [Pytorch Lighning callback](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).

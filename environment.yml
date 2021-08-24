@@ -1,4 +1,4 @@
-name: frame
+name: dl-kit
 channels:
   - pytorch
   - defaults
