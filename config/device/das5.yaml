@@ -8,4 +8,4 @@ device:
   pin_memory: True
 
 trainer:
-  gpus: 4
+  gpus: 1
