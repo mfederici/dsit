@@ -1,11 +1,12 @@
 # @package _global_
-trainer:
-  gpus: 1
-
 device:
   data_root: /ssdstore/datasets
   experiments_root: /hddstore
-  download_files: False
+  download_files: True
   num_workers: 32
   pin_memory: True
+
+trainer:
+  gpus: 1
+
 

@@ -10,6 +10,7 @@ trainer:
 run:
   name: null
   dir: ${device.experiments_root}/experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  project: noname
 
 hydra:
   run:
