@@ -14,6 +14,8 @@ if [ $DEVICE_NAME = das5 ]
 then
     echo "Loading modules for das5"
     module load cuda10.1/toolkit
+    # Activate conda
+    export PATH=/var/scratch/$USER/anaconda3/envs/dl-kit/bin/:$PATH
 elif [ $DEVICE_NAME = ivi-cluster ]
 then
     echo "Setting the variables path for the ivi-cluster"
@@ -22,16 +24,17 @@ then
     export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
     export CUDA_CACHE_PATH="$TMPDIR"/.cuda_cache/
     export CUDA_CACHE_DISABLE=0
+
+    # Activate conda
+    export PATH=$HOME/anaconda3/envs/dl-kit/bin/:$PATH
 else
     echo "No CUDA variable is set"
 fi
 
-
 # Make sure you are in the project directory
 cd $HOME/Documents/dl-kit
 
-# Activate conda
-export PATH=$HOME/anaconda3/envs/dl-kit/bin/:$PATH
+
 
 # check wandb and python version
 which python
