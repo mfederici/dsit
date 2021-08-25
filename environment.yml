@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - pytorch=1.7.0
-  - cudatoolkit=10.2
+  - cudatoolkit=10.1
   - numpy=1.18.1
   - numpy-base=1.18.1
   - pip=20.0.2
