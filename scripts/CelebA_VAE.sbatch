@@ -10,7 +10,7 @@
 #SBATCH --verbose
 
 # Cuda variables
-IF %DEVICE_NAME%==das5(
+IF %DEVICE_NAME%==das5 (
     module load cuda10.1/toolkit
 ) ELSE IF %DEVICE_NAME%==ivi-cluster (
     export CUDA_HOME=/usr/local/cuda-10.2
