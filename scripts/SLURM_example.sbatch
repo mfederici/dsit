@@ -5,7 +5,7 @@
 # Resource allocation
 #SBATCH --gres=gpu:1
 #SBATCH --mem=10G
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=32
 #SBATCH --time 10:00:00
 #SBATCH --ntasks=1
 
@@ -22,19 +22,6 @@ export PATH=${CUDA_HOME}/bin:${PATH}
 export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
 export CUDA_CACHE_PATH="$TMPDIR"/.cuda_cache/
 export CUDA_CACHE_DISABLE=0
-
-# Setting the env_variables
-
-# Weights and biases username and password
-export WANDB_USER=<WANDB_USERNAME>
-export WANDB_PROJECT=<WANDB_PROJECT>
-
-# Parameters for number of cores for data-loading and device on which the model is placed
-export NUM_WORKERS=16
-export DEVICE=cuda
-
-# Pointing to the directory in which the dataset is stored
-export DATA_ROOT=<DATASET_ROOT> #(e.g. /hddstore/datasets)
 
 # We use temp to save the backups since they are uploaded and deleted afterwards
 mkdir /tmp/experiments

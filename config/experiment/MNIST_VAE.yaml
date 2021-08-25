@@ -57,7 +57,4 @@ params:
   encoder_layers: [ 1024, 128 ]
   decoder_layers: [ 128, 1024 ]
 
-run:
-  project: VAE_experiments
-
 seed: 42

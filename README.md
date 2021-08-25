@@ -47,16 +47,18 @@ The corresponding `config/device/<DEVICE_NAME>.yaml` configuration file contains
 regarding hardware and paths.
 Here we report an example for a device configuration:
 ```yaml
-# Example of the content of config/device/<DEVICE_NAME>
-data_root: /ssdstore/data             # Path in which small dataset are stored
-big_data_root: /hddstore/data         # Path for the big ones
-experiments_root: /hddstore           # Location in which the experiments are stored
-download_files: true                  # Flag to specify if the device allows for downloading files
-num_workers: 32                       # Number of workers spawned for data-loading
+# Example of the content of config/device/ivi-cluster.yaml to run experiment on a SLURM cluster
 
 # @package _global_
-trainer:      # Accessing and changing the parameters of the Pytorch Ligthning trainer
-  gpus: 4     # Number of gpus used for training
+trainer:
+  gpus: 1                         # Specify the number of GPUs to use for the pytorch lightning trainer
+
+device:
+  data_root: /ssdstore/datasets   # Root dataset directory
+  experiments_root: /hddstore     # Root experiment directory
+  download_files: False           # Flag to disable dataset download (from code)
+  num_workers: 32                 # Number of workers used for data-loading
+  pin_memory: True                # See pin_memory flag for the pytorch DataLoader
 ```
 With this setup, the same code can be used on different machines since all the hardware-dependent configuration 
 is grouped into the device `.yaml` configuration file. Further details can be found in the [device section](#device)
@@ -168,8 +170,12 @@ defaults:
   - /optimization: batch_ADAM
 ```
 The `# @package _global_` line is used to indicate that the following keys are global, while `defaults` specifies 
-the values for `data` and `optimization` procedures respectively. Further information regarding
-configuration packages and overrides can be found [here](https://hydra.cc/docs/advanced/overriding_packages).
+the values for `data` and `optimization` procedures respectively. 
+In other words, the dictionary defined in the files `data/MNIST.yaml` and `optimization/batch_ADAM.yaml` are added 
+to the `data` and `optimization` keys respectively.
+
+Further information regarding configuration packages and overrides can be found 
+[here](https://hydra.cc/docs/advanced/overriding_packages).
 
 The [VAE model](code/models/unsupervised/VAE.py) requires the definition of an `encoder`, `decoder` and `prior` architectures: 
 ```yaml

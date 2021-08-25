@@ -81,7 +81,4 @@ params:
       stride: 1
   landmark_predictor_layers: [1024, 128, 32]
 
-run:
-  project: VAE_experiments
-
 seed: 42

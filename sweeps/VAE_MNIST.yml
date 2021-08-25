@@ -13,8 +13,7 @@ metric:
   name: ELBO/Validation # Metric defined in the evaluation configuration file (this is the validation accuracy)
 parameters:
 # Model parameters can be accessed by using the operator '.' to access the members of dictionaries
-# to access the parameters 'beta' in 'params' of a model (see the model configuration file) we use the syntax
-# model.params.beta as shown below
+# to access the parameters 'beta' in 'params' we use the syntax params.beta as shown below
   params.beta:
     distribution: log_uniform
     min: -20
