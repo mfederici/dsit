@@ -14,8 +14,6 @@ if [ $DEVICE_NAME = das5 ]
 then
     echo "Loading modules for das5"
     module load cuda10.1/toolkit
-    export PATH=/usr/local/cuda-10.0/bin:$PATH
-    export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64:$LD_LIBRARY_PATH
 
     # Activate conda
     export PATH=/var/scratch/$USER/anaconda3/envs/dl-kit/bin/:$PATH
