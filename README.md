@@ -51,7 +51,7 @@ Here we report an example for a device configuration:
 
 # @package _global_
 trainer:
-  gpus: 1                         # Specify the number of GPUs to use for the pytorch lightning trainer
+  gpus: 1                         # Specify the number of GPUs to use for the lightning trainer
 
 device:
   data_root: /ssdstore/datasets   # Root dataset directory
@@ -112,7 +112,7 @@ command:
 method: bayes                   # bayesian optimization
 metric:
   goal: maximize
-  name: ELBO/Validation         # Metric logged and defined in the config/experient/MNIST_VAE.yaml file
+  name: ELBO/Validation         # Metric logged and defined in config/experient/MNIST_VAE.yaml
 parameters:
   params.beta:                  # The hyper-parameter beta
     distribution: log_uniform   # will be sampled uniformly in the log space

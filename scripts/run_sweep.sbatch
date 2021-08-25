@@ -22,9 +22,6 @@ cd $HOME/Documents/dl-kit
 # Activate conda
 export PATH=$HOME/anaconda3/envs/dl-kit/bin/:$PATH
 
-# Set the correct device name
-export DEVICE_NAME=ivi-cluster
-
 # check wandb and python version
 which python
 which wandb
