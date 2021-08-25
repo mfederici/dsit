@@ -2,7 +2,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=10G
 #SBATCH --cpus-per-task=16
-#SBATCH --time 10:00:00
+#SBATCH --time 2:00:00
 #SBATCH --ntasks=1
 #SBATCH --priority=TOP
 #SBATCH --job-name=frame
