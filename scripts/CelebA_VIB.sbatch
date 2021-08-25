@@ -10,15 +10,22 @@
 #SBATCH --verbose
 
 # Cuda variables
-IF %DEVICE_NAME%==das5 (
+if [[ $DEVICE_NAME -eq das5]]
+then
+    echo "Loading modules for das5"
     module load cuda10.1/toolkit
-) ELSE IF %DEVICE_NAME%==ivi-cluster (
+elif [[ $DEVICE_NAME -eq ivi-cluster]]
+then
+    echo "Setting the variables path for the ivi-cluster"
     export CUDA_HOME=/usr/local/cuda-10.2
     export PATH=${CUDA_HOME}/bin:${PATH}
     export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
     export CUDA_CACHE_PATH="$TMPDIR"/.cuda_cache/
     export CUDA_CACHE_DISABLE=0
-)
+else
+    echo "No CUDA variable is set"
+fi
+
 
 # Make sure you are in the project directory
 cd $HOME/Documents/dl-kit
