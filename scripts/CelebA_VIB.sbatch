@@ -10,11 +10,15 @@
 #SBATCH --verbose
 
 # Cuda variables
-export CUDA_HOME=/usr/local/cuda-10.2
-export PATH=${CUDA_HOME}/bin:${PATH}
-export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
-export CUDA_CACHE_PATH="$TMPDIR"/.cuda_cache/
-export CUDA_CACHE_DISABLE=0
+IF %DEVICE_NAME%==das5(
+    module load cuda10.1/toolkit
+) ELSE IF %DEVICE_NAME%==ivi-cluster (
+    export CUDA_HOME=/usr/local/cuda-10.2
+    export PATH=${CUDA_HOME}/bin:${PATH}
+    export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
+    export CUDA_CACHE_PATH="$TMPDIR"/.cuda_cache/
+    export CUDA_CACHE_DISABLE=0
+)
 
 # Make sure you are in the project directory
 cd $HOME/Documents/dl-kit
