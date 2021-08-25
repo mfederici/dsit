@@ -10,11 +10,11 @@
 #SBATCH --verbose
 
 # Cuda variables
-if [[ $DEVICE_NAME -eq das5]]
+if [[ $DEVICE_NAME = das5 ]]
 then
     echo "Loading modules for das5"
     module load cuda10.1/toolkit
-elif [[ $DEVICE_NAME -eq ivi-cluster]]
+elif [[ $DEVICE_NAME = ivi-cluster ]]
 then
     echo "Setting the variables path for the ivi-cluster"
     export CUDA_HOME=/usr/local/cuda-10.2
