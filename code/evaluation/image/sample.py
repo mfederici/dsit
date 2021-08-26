@@ -27,4 +27,4 @@ class ImageSampleEvaluation(Evaluation):
     def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
         model = optimization.model
 
-        return self.evalate_model(model)
+        return self.evaluate_model(model)
