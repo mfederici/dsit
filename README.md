@@ -49,15 +49,11 @@ Here we report an example for a device configuration:
 ```yaml
 # Example of the content of config/device/ivi-cluster.yaml to run experiment on a SLURM cluster
 
-# @package _global_
-trainer:
   gpus: 1                         # Specify the number of GPUs to use for the lightning trainer
-
-device:
   data_root: /ssdstore/datasets   # Root dataset directory
   experiments_root: /hddstore     # Root experiment directory
   download_files: False           # Flag to disable dataset download (from code)
-  num_workers: 32                 # Number of workers used for data-loading
+  num_workers: 16                 # Number of workers used for data-loading
   pin_memory: True                # See pin_memory flag for the pytorch DataLoader
 ```
 With this setup, the same code can be used on different machines since all the hardware-dependent configuration 
@@ -644,15 +640,6 @@ As an example, if `DEVICE_NAME` is set to `laptop`, the configuration in `config
 This design allows us to define multiple devices (for deployment, training, testing) that are dynamically selected
 based on the local value of `DEVICE_NAME`. Adding a new configuration is as easy as creating a new `.yaml` file to the
 `config/device` folder and assigning the corresponding `DEVICE_NAME` on the device of interest.
-
-Note that the trainer-specific configuration (such as number of gpus, tpus, accelerators, ...) can be specified direcly
-from the device configuration using the following syntax:
-```yaml
-# @package _global_
-trainer:
-  gpus: 4
-  accelerator: ddp
-```
 
 ## Run Details
 The run configuration object is used to define the name associated to the run (`run.name`) and the name of the 

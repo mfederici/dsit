@@ -6,6 +6,7 @@ callbacks: []
 
 trainer:
   _target_: pytorch_lightning.Trainer
+  gpus: ${device.gpus}
 
 run:
   name: null

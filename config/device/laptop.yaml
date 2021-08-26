@@ -1,7 +1,6 @@
-# @package _global_
-device:
-  data_root: /data
-  experiments_root: /tmp
-  download_files: true
-  num_workers: 8
-  pin_memory: False
+data_root: /data
+experiments_root: /tmp
+download_files: true
+num_workers: 8
+pin_memory: False
+gpus: 0

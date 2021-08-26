@@ -1,12 +1,8 @@
-# @package _global_
-device:
-  data_root: /ssdstore/datasets
-  experiments_root: /hddstore
-  download_files: True
-  num_workers: 32
-  pin_memory: True
-
-trainer:
-  gpus: 1
+data_root: /ssdstore/datasets
+experiments_root: /hddstore
+download_files: True
+num_workers: 32
+pin_memory: True
+gpus: 1
 
 
