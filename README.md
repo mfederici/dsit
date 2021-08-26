@@ -128,6 +128,11 @@ Agents can then be started with:
 ```shell
 wandb agent <WANDB_USER>/<WANDB_PROJECT>/<SWEEP_ID>
 ```
+
+The results of the corresponding sweep can be visualized in the 
+[Weights & Biases board](https://wandb.ai/mfederici/mnist_examples/sweeps/m0y9l5op)
+![](https://user-images.githubusercontent.com/6851861/130940157-756357b8-e66d-456b-9a4f-17721a4fc4ec.png)
+
 # The run configuration
 The configuration for each run is composed by the following main components:
 - [**data**](#data): the data used for training the models. See section for further 
@@ -406,6 +411,10 @@ Modularity and re-usability are the key design principles that allow to re-use a
 task-agnostic fashion. All the task-dependent code is contained into the parameters (such as `encoder` and `decoder`) 
 that are passed to the model.
 
+Note that the code for the Variational Autoencoder model is completely independent of the specific dataset or
+architectures. Therefore, the same model can be used on all datasets without any need to rewrite or change the code as 
+long as the different data types are handled correctly by the respective encoder and decoder architectures.
+
 ### Architectures 
 Different architectures are implemented in the `code/architectures` folder. Each architecture is designed for a specific 
 role (e.g. `Encoder`, `Decoder`, `Predictor`, ...), as a result the same architecture can be used in multiple models.
@@ -631,3 +640,8 @@ trainer:
 The run configuration object is used to define the name associated to the run (`run.name`) and the name of the 
 corresponding project (`run.project`). These properties can be accessed and modified form the command line
 or by specifying them in the experiment definition.
+
+# Loading models 
+
+The [loading.ipynb](loading.ipynb) notebook reports an example on how models can be easily retrieved directly from the
+Weights & Bias Api. 

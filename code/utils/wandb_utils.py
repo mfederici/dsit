@@ -4,6 +4,8 @@ import os
 import wandb
 import yaml
 from omegaconf import OmegaConf
+from hydra.utils import instantiate
+import torch
 
 SPLIT_TOKEN = '.'
 VAR_REGEX = '.*\${([a-z]|[A-Z]|_)+([a-z]|[A-Z]|[0-9]|\.|_)*}.*'
@@ -54,3 +56,61 @@ def add_config(experiment, conf):
 
     # Copy hydra config into the files folder so that everything is stored
     copytree('.hydra', os.path.join(experiment.dir, 'hydra'))
+
+
+def load_component(conf, state_dict, component_name):
+    if component_name is None:
+        component = instantiate(conf)
+        component.load_state_dict(state_dict)
+        return component
+    else:
+        new_state_dict = {}
+        start_token = None
+        for k, v in state_dict.items():
+            if component_name in k:
+                if start_token is None:
+                    start_token = k.split('.')[0]
+                else:
+                    assert start_token == k.split('.')[0]
+
+                new_state_dict['.'.join(k.split('.')[1:])] = v
+                if k.startswith(component_name):
+                    recur = False
+
+        if start_token != component_name:
+            print(start_token, conf)
+            return load_component(conf[start_token], new_state_dict, component_name)
+        else:
+            component = instantiate(conf[start_token])
+            component.load_state_dict(new_state_dict)
+            return component
+
+
+def load_checkpoint(run_path, checkpoint='last.ckpt', component_name=None, download_dir='/tmp', device='cpu'):
+    # Get access to the wandb Api
+    api = wandb.Api()
+
+    # Retrieve the required run
+    run = api.run(run_path)
+
+    # Load the configuration for the run
+    conf = OmegaConf.load(run.file('hydra/config.yaml').download(replace=True))
+
+    # Load the configuration for the current device
+    device_name = os.environ.get('DEVICE_NAME')
+    local_device_conf = OmegaConf.load('config/device/%s.yaml' % device_name)
+    if 'device' in local_device_conf:
+        local_device_conf = local_device_conf['device']
+
+    # Replace the device with the current one
+    conf.device = local_device_conf
+
+    # Donwload the required checkpoint
+    file = run.file('checkpoints/%s' % checkpoint).download(download_dir, replace=True)
+
+    # Load it
+    checkpoint = torch.load(os.path.join(download_dir, 'checkpoints', checkpoint), map_location=torch.device(device))
+
+    # Instantiate the required architecture and the corresponding weights
+    return load_component(conf['optimization'], state_dict=checkpoint['state_dict'], component_name=component_name)
+

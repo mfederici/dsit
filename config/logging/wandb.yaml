@@ -8,5 +8,7 @@ trainer:
     save_dir: ${run.dir}
 extra_callbacks:
   - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
+    save_last: true
+    filename: {epoch}
 
 

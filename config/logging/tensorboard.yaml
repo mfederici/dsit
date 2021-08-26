@@ -7,3 +7,5 @@ trainer:
 extra_callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints
+    save_last: true
+    filename: {epoch}

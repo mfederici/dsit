@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 from code.loggers import LogEntry
 from code.loggers.log_entry import SCALAR_ENTRY, SCALARS_ENTRY
@@ -28,17 +29,9 @@ class DatasetEvaluation(Evaluation):
     def evaluate_batch(self, data, model):
         raise NotImplemented()
 
-    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
-        if self.data_loader is None:
-            num_workers = optimization.train_dataloader().num_workers
-            self.data_loader = DataLoader(optimization.data[self.evaluate_on],
-                                          shuffle=self.shuffle,
-                                          batch_size=self.batch_size,
-                                          num_workers=num_workers)
-
-        values = {}
-        model = optimization.model
+    def evaluate_model(self, model: nn.Module):
         evaluations = 0.
+        values = {}
         device = next(model.parameters()).device
 
         model.eval()
@@ -71,7 +64,7 @@ class DatasetEvaluation(Evaluation):
                 if evaluations >= self.n_samples:
                     break
 
-        values = {k: v/evaluations for k, v in values.items()}
+        values = {k: v / evaluations for k, v in values.items()}
         if len(values) == 1:
             for k in values:
                 value = values[k]
@@ -84,3 +77,14 @@ class DatasetEvaluation(Evaluation):
                 data_type=SCALARS_ENTRY,
                 value=values
             )
+
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
+        if self.data_loader is None:
+            num_workers = optimization.train_dataloader().num_workers
+            self.data_loader = DataLoader(optimization.data[self.evaluate_on],
+                                          shuffle=self.shuffle,
+                                          batch_size=self.batch_size,
+                                          num_workers=num_workers)
+
+        model = optimization.model
+        return self.evaluate_model(model)

@@ -4,6 +4,7 @@ from torchvision.utils import make_grid
 from code.evaluation import Evaluation
 from code.loggers import LogEntry
 import pytorch_lightning as pl
+import torch.nn as nn
 
 from code.loggers.log_entry import IMAGE_ENTRY
 
@@ -17,7 +18,6 @@ class ImageReconstructionEvaluation(Evaluation):
         self.sample_images = sample_images
         self.sample_latents = sample_latents
 
-
     def sample_new_images(self):
         # sample the required number of pictures randomly
         ids = np.random.choice(len(self.dataset), self.n_pictures)
@@ -25,12 +25,7 @@ class ImageReconstructionEvaluation(Evaluation):
 
         return images_batch
 
-    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
-        if self.dataset is None:
-            self.dataset = optimization.data[self.evaluate_on]
-
-        model = optimization.model
-
+    def evaluate_model(self, model: nn.Module):
         # Check that the model has a definition of a method to reconstruct the inputs
         if not hasattr(model, 'reconstruct'):
             raise Exception('The model %s must implement a reconstruct(x) method with `x` as a picture' %
@@ -57,6 +52,14 @@ class ImageReconstructionEvaluation(Evaluation):
 
         # return a LogEntry
         return LogEntry(
-            data_type=IMAGE_ENTRY,                          # Type of the logged object, to be interpreted by the logger
-            value=make_grid(x_all, nrow=self.n_pictures)    # Value to log
+            data_type=IMAGE_ENTRY,  # Type of the logged object, to be interpreted by the logger
+            value=make_grid(x_all, nrow=self.n_pictures)  # Value to log
         )
+
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
+        if self.dataset is None:
+            self.dataset = optimization.data[self.evaluate_on]
+
+        model = optimization.model
+
+        return self.evaluate_model(model)
