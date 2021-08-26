@@ -40,12 +40,6 @@ fi
 # Make sure you are in the project directory
 cd $HOME/Documents/dl-kit
 
-# Activate conda
-export PATH=$HOME/anaconda3/envs/dl-kit/bin/:$PATH
-
-# Set the correct device name
-export DEVICE_NAME=ivi-cluster
-
 # check wandb and python version
 which python
 which wandb
@@ -53,7 +47,6 @@ which wandb
 # Generate cuda stats to check cuda is found
 nvidia-smi
 echo Starting
-
 
 # Run the program
 python train.py +experiment=CelebA_VIB +trainer.max_epochs=100 params.beta=0.05 run.project=CelebA_examples
