@@ -43,7 +43,7 @@ callbacks:
       n_samples: 2048
   - _target_: code.callbacks.EvaluationCallback
     name: Images/Landmarks
-    evaluate_every: 20 seconds
+    evaluate_every: 1 minutes
     evaluator:
       _target_: code.evaluation.image.ImageLandmarksEvaluation
       evaluate_on: valid
