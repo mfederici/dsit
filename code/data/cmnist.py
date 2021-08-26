@@ -3,7 +3,8 @@ import torch
 from torchvision.transforms import ToTensor
 from torchvision.datasets import MNIST
 
-from datasets.cmnist_dist import make_joint_distribution
+from code.data.cmnist_dist import make_joint_distribution
+
 
 # Implementation of the CMNIST, d-CMNIST and y-CMNIST datasets for pytorch
 class CMNIST(MNIST):
@@ -12,7 +13,7 @@ class CMNIST(MNIST):
 
         assert version in ['CMNIST', 'd-CMNIST', 'y-CMNIST']
 
-        self.dist = make_joint_distribution(version).condition_on('t',t)
+        self.dist = make_joint_distribution(version).condition_on('t', t)
         self.sample_once = sample_once
         self.sampled_data = {}
 

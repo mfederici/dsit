@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from utils.distribution import DiscreteDistribution
 
+
 # Model for q(z|x) using a learnable weight matrix
 class DiscreteEncoder(nn.Module):
     def __init__(self, z_dim=64):

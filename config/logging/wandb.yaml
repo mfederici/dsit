@@ -1,0 +1,13 @@
+# @package _global_
+trainer:
+  checkpoint_callback: False
+  logger:
+    _target_: code.loggers.WandbLogger
+    project: ${run.project}
+    name: ${run.name}
+    save_dir: ${run.dir}
+extra_callbacks:
+  - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
+    save_last: true
+
+
