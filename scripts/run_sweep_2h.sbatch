@@ -5,7 +5,7 @@
 #SBATCH --time 2:00:00
 #SBATCH --ntasks=1
 #SBATCH --priority=TOP
-#SBATCH --job-name=frame
+#SBATCH --job-name=sweep
 #SBATCH --output=log.txt
 #SBATCH --verbose
 

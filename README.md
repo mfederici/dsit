@@ -133,6 +133,24 @@ The results of the corresponding sweep can be visualized in the
 [Weights & Biases board](https://wandb.ai/mfederici/mnist_examples/sweeps/m0y9l5op)
 ![](https://user-images.githubusercontent.com/6851861/130940157-756357b8-e66d-456b-9a4f-17721a4fc4ec.png)
 
+## Running on a SLURM cluster
+
+The repository contains a few examples of [SLURM sbatch scripts](https://slurm.schedmd.com/sbatch.html) that can
+be used to run experiments or sweeps on a SLURM cluster (such as Das5 or the ivi-cluster).
+
+The [run_sweep_2h file](scripts/run_sweep_2h.sbatch) report the example used to run a sweep for a VAE model on MNIST 
+once the corresponding wandb sweep has been created.
+
+It is possible to start an agent on the das5 cluster using the provided scripts with:
+```shell
+sbatch --export=DEVICE_NAME=das5,SWEEP=<SWEEP_ID> scripts/run_sweep_2h.sbatch
+```
+in which the `--export` flag is used to pass variables to the script, and <SWEEP_ID> refer to the string
+produced when running the `wandb sweep` command (see previous section).
+
+
+
+
 # The run configuration
 The configuration for each run is composed by the following main components:
 - [**data**](#data): the data used for training the models. See section for further 

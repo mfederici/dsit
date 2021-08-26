@@ -5,7 +5,7 @@
 #SBATCH --time 10:00:00
 #SBATCH --ntasks=1
 #SBATCH --priority=TOP
-#SBATCH --job-name=frame
+#SBATCH --job-name=CelebA_VIB
 #SBATCH --output=log.txt
 #SBATCH --verbose
 
