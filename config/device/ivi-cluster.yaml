@@ -4,5 +4,5 @@ download_files: True
 num_workers: 32
 pin_memory: True
 gpus: 1
-
+accelerator: ddp
 

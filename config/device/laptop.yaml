@@ -4,3 +4,4 @@ download_files: true
 num_workers: 8
 pin_memory: False
 gpus: 0
+accelerator: none
