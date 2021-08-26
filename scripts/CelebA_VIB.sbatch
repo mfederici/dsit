@@ -49,4 +49,4 @@ nvidia-smi
 echo Starting
 
 # Run the program
-python train.py +experiment=CelebA_VIB +trainer.max_epochs=100 params.beta=0.05 run.project=CelebA_examples
+python train.py +experiment=CelebA_VIB_landmarks +trainer.max_epochs=100 params.beta=0.05 run.project=CelebA_examples
