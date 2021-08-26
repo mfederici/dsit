@@ -27,6 +27,11 @@ then
 
     # Activate conda
     export PATH=$HOME/anaconda3/envs/dl-kit/bin/:$PATH
+
+    # Sync the local copy of the dataset
+    echo copying the celeba dataset to the local storage
+    rsync -rva $HOME/datasets/celeba /ssdstore/datasets
+    echo done
 else
     echo "No CUDA variable is set"
 fi
@@ -49,10 +54,6 @@ which wandb
 nvidia-smi
 echo Starting
 
-# Sync the local copy of the dataset
-echo copying the celeba dataset to the local storage
-rsync -rva $HOME/datasets/celeba /ssdstore/datasets
-echo done
 
 # Run the program
 python train.py +experiment=CelebA_VIB +trainer.max_epochs=100 params.beta=0.05 run.project=CelebA_examples
