@@ -17,8 +17,8 @@ def parse(conf: DictConfig):
     # Instantiate the Pytorch Lightning Trainer
     trainer = instantiate(conf.trainer)
 
-    # If using the Weights and Bias Logger
-    if isinstance(trainer.logger, WandbLogger):
+    # If using the Weights and Bias Logger on the first thread
+    if isinstance(trainer.logger, WandbLogger) and trainer.global_rank == 0:
 
         # Add the hydra configuration to the experiment using the Wandb API
         add_config(trainer.logger.experiment, conf)
