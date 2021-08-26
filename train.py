@@ -17,20 +17,22 @@ def parse(conf: DictConfig):
     # Instantiate the Pytorch Lightning Trainer
     trainer = instantiate(conf.trainer)
 
-    # If using the Weights and Bias Logger on the first thread
-    if isinstance(trainer.logger, WandbLogger) and trainer.global_rank == 0:
+    # On the first thread
+    if trainer.global_rank == 0:
+        # If using the Weights and Bias Logger
+        if isinstance(trainer.logger, WandbLogger):
 
-        # Add the hydra configuration to the experiment using the Wandb API
-        add_config(trainer.logger.experiment, conf)
+            # Add the hydra configuration to the experiment using the Wandb API
+            add_config(trainer.logger.experiment, conf)
 
-    # Add all the callbacks to the trainer (for logging, checkpointing, ...)
-    if not trainer.fast_dev_run:
-        for callback_conf in conf.callbacks:
-            callback = instantiate(callback_conf)
-            trainer.callbacks.append(callback)
-        for callback_conf in conf.extra_callbacks:
-            callback = instantiate(callback_conf)
-            trainer.callbacks.append(callback)
+        # Add all the callbacks to the trainer (for logging, checkpointing, ...)
+        if not trainer.fast_dev_run:
+            for callback_conf in conf.callbacks:
+                callback = instantiate(callback_conf)
+                trainer.callbacks.append(callback)
+            for callback_conf in conf.extra_callbacks:
+                callback = instantiate(callback_conf)
+                trainer.callbacks.append(callback)
 
     # Instantiate the optimization procedure, which is a Pytorch Lightning module
     optimization = instantiate(conf.optimization)
