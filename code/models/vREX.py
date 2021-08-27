@@ -1,5 +1,7 @@
 import torch
 from torch.distributions import Distribution
+
+from code.architectures.utils import OneHot
 from code.models.base import ConditionalDistribution, MarginalDistribution, RegularizedModel
 
 
@@ -21,6 +23,7 @@ class VREx(RegularizedModel):
         self.predictor = predictor
         self.n_envs = n_envs
         self.use_std = use_std
+        self.one_hot = OneHot(n_envs)
 
     def compute_reg_loss(self, y_rec_loss, e):
 

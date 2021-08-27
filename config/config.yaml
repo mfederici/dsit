@@ -2,11 +2,11 @@ defaults:
   - device: ${oc.env:DEVICE_NAME}
   - logging: wandb
 
-callbacks: []
-
 trainer:
   _target_: pytorch_lightning.Trainer
   gpus: ${device.gpus}
+
+seed: 42
 
 run:
   name: null

@@ -4,6 +4,7 @@ command:
   - ${interpreter}
   - ${program}
   - +experiment=VIB
+  - +evaluation=default
   - +architectures=MLP
   - +trainer.max_epochs=200
   - run.project=dsit
