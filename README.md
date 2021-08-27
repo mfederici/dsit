@@ -10,6 +10,6 @@ The following libraries are required to run the code:
 - tqdm
 
 ## Use
-The notebook 'visualizations.ipynb' contains detailed descriptions of the experiments ad usage for one of the CMNIST distributions considered in this work.
+The notebook `visualizations.ipynb` contains detailed descriptions of the experiments ad usage for one of the CMNIST distributions considered in this work.
 
-The CMNIST variants used for the experiments reported in this work are defined in the '/datasets' folder. 'dataset.ipynb' shows an example of usage of the dataset using the default pytorch pipeline and 'Dataset' objects.
+The CMNIST, d-CMNIST and y-CMNIST variants are defined in the `/datasets` folder. `dataset.ipynb` shows an example of usage extending the default pytorch pipeline and 'Dataset' objects.
