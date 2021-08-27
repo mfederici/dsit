@@ -55,7 +55,7 @@ callbacks:
 params:
   z_dim: 64
   beta: 0.005
-  lr: 1e-3
+  lr: 1e-4
   batch_size: 64
   sigma: 1
   encoder_layers:
