@@ -54,7 +54,7 @@ def add_config(experiment, conf):
     experiment.config.update(flat_config)
 
     # Check for inconsistencies
-    check_config(conf, wandb.config)
+    # check_config(conf, wandb.config)
 
     # Copy hydra config into the files folder so that everything is stored
     copytree('.hydra', os.path.join(experiment.dir, 'hydra'))
