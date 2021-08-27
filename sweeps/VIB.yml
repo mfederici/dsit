@@ -1,0 +1,21 @@
+program: train.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - +experiment=VIB
+  - +trainer.max_epochs=200
+  - run.project=dsit
+  - ${args_no_hyphens}
+method: grid
+parameters:
+  seed:
+    values:
+      - 7
+      - 42
+      - 1024
+  data:
+    values:
+      - CMNIST
+      - d-CMNIST
+      - y-CMNIST

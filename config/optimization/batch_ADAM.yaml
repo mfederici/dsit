@@ -1,7 +1,0 @@
-_target_: code.optimization.batch_ADAM.AdamBatchOptimization
-
-model: ${model}
-data: ${data}
-lr: ${params.lr}
-num_workers: ${device.num_workers}
-batch_size: ${params.batch_size}

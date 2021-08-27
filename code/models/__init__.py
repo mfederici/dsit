@@ -1,2 +1,2 @@
-from code.models.unsupervised.VAE import VariationalAutoencoder
+from code.models.VIB import VariationalInformationBottleneck
 from code.models.base import ConditionalDistribution, MarginalDistribution, Model

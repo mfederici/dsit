@@ -6,10 +6,7 @@ import torch.nn as nn
 from code.loggers import LogEntry
 from code.loggers.log_entry import SCALAR_ENTRY, SCALARS_ENTRY
 
-TRAIN_STR = 'train'
-VALID_STR = 'valid'
-TEST_STR = 'test'
-STRS = [TRAIN_STR, TEST_STR, VALID_STR]
+
 
 
 class Evaluation:
@@ -18,13 +15,12 @@ class Evaluation:
 
 
 class DatasetEvaluation(Evaluation):
-    def __init__(self, evaluate_on=VALID_STR, n_samples=2048, batch_size=64, shuffle=False):
+    def __init__(self, evaluate_on, n_samples=2048, batch_size=64, shuffle=False):
         self.data_loader = None
         self.evaluate_on = evaluate_on
         self.n_samples = n_samples
         self.batch_size = batch_size
         self.shuffle = shuffle
-        assert evaluate_on in STRS
 
     def evaluate_batch(self, data, model):
         raise NotImplemented()

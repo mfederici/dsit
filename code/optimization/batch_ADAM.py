@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 import pytorch_lightning as pl
 from code.models.base import Model
+from code.utils.schedulers import Scheduler
 
 
 class AdamBatchOptimization(pl.LightningModule):
@@ -40,3 +41,15 @@ class AdamBatchOptimization(pl.LightningModule):
 
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.lr)
+
+
+class AdamBatchRegularizedOptimization(AdamBatchOptimization):
+    def __init__(self, beta_scheduler: Scheduler, **params):
+        super(AdamBatchRegularizedOptimization, self).__init__(**params)
+        self.beta_scheduler = beta_scheduler
+
+    def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
+        beta = self.beta_scheduler(self.trainer.global_step)
+        self.model.beta = beta
+        self.log('Train/beta', beta)
+        return super(AdamBatchRegularizedOptimization, self).training_step(batch, batch_idx)

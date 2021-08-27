@@ -237,7 +237,7 @@ class DiscreteDistribution:
         sample = {}
         for i, v in enumerate(reversed(self.indices)):
             sample[v] = c_sample % self.p.shape[-(i+1)]
-            c_sample = c_sample // self.p.shape[-(i+1)]
+            c_sample = torch.floor(c_sample / self.p.shape[-(i+1)])
 
         return sample
 

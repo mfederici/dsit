@@ -1,0 +1,104 @@
+# @package _global_
+defaults:
+  - /data: CMNIST
+  - /optimization: batch_ADAM_schedule
+
+# Definitions of the architectures used by the VAE model
+model:
+  _target_: code.models.VariationalInformationBottleneck
+  prior:
+    _target_: code.architectures.base.DiagonalNormal
+    z_dim: ${params.z_dim}
+  predictor:
+    _target_: code.architectures.CMNIST.LatentClassifier
+    layers: ${params.classifier_layers}
+    dropout: ${params.predictor_dropout}
+    z_dim: ${params.z_dim}
+  encoder:
+    _target_: code.architectures.CMNIST.Encoder
+    layers: ${params.encoder_layers}
+    dropout: ${params.encoder_dropout}
+    z_dim: ${params.z_dim}
+  beta: ${params.beta}
+
+# Evaluation callbacks
+callbacks:
+  - _target_: code.callbacks.EvaluationCallback
+    name: Accuracy/Train(t=1)
+    evaluate_every: 1000 iterations
+    evaluator:
+      _target_: code.evaluation.AccuracyEvaluation
+      evaluate_on: train
+      n_samples: 2048
+  - _target_: code.callbacks.EvaluationCallback
+    name: Accuracy/Train(t=0)
+    evaluate_every: 1000 iterations
+    evaluator:
+      _target_: code.evaluation.AccuracyEvaluation
+      evaluate_on: train_t0
+      n_samples: 2048
+  - _target_: code.callbacks.EvaluationCallback
+    name: Accuracy/Test(t=0)
+    evaluate_every: 1000 iterations
+    evaluator:
+      _target_: code.evaluation.AccuracyEvaluation
+      evaluate_on: test
+      n_samples: 2048
+  - _target_: code.callbacks.EvaluationCallback
+    name: Accuracy/Test(t=1)
+    evaluate_every: 1000 iterations
+    evaluator:
+      _target_: code.evaluation.AccuracyEvaluation
+      evaluate_on: test_t1
+      n_samples: 2048
+  - _target_: code.callbacks.EvaluationCallback
+    name: CrossEntropy/Train(t=1)
+    evaluate_every: 5 epochs
+    evaluator:
+      _target_: code.evaluation.CrossEntropyEvaluation
+      evaluate_on: train
+      n_samples: 10000
+  - _target_: code.callbacks.EvaluationCallback
+    name: CrossEntropy/Train(t=0)
+    evaluate_every: 5 epochs
+    evaluator:
+      _target_: code.evaluation.CrossEntropyEvaluation
+      evaluate_on: train_t0
+      n_samples: 10000
+  - _target_: code.callbacks.EvaluationCallback
+    name: CrossEntropy/Test(t=0)
+    evaluate_every: 5 epochs
+    evaluator:
+      _target_: code.evaluation.CrossEntropyEvaluation
+      evaluate_on: test
+      n_samples: 10000
+  - _target_: code.callbacks.EvaluationCallback
+    name: CrossEntropy/Test(t=1)
+    evaluate_every: 5 epochs
+    evaluator:
+      _target_: code.evaluation.CrossEntropyEvaluation
+      evaluate_on: test_t1
+      n_samples: 10000
+
+
+# hyper-parameters for the architectures
+params:
+  z_dim: 64
+  beta: 0.1
+  lr: 1e-3
+  batch_size: 128
+  encoder_layers: [128, 128]
+  classifier_layers: [128, 128]
+  predictor_dropout: 0
+  encoder_dropout: 0.25
+
+# Scheduler to determine the regularization strength while the model is training
+beta_scheduler:
+  _target_: code.utils.schedulers.LinearIncrementScheduler
+  start_value: 0.00001
+  start_iteration: 5000
+  increment_by: 0.00003
+
+# Seed for the model
+seed: 42
+

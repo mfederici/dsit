@@ -9,21 +9,25 @@ import numpy as np
 
 
 # Create simple layer stacks with relu activations
-def make_stack(layers):
+def make_stack(layers, dropout=0.0):
     nn_layers = []
     for i in range(len(layers)-1):
         nn_layers.append(nn.Linear(layers[i], layers[i+1]))
         if i < len(layers)-2:
+            if dropout > 0:
+                nn_layers.append(nn.Dropout(dropout))
             nn_layers.append(nn.ReLU(True))
 
     return nn_layers
 
 
-def make_cnn_stack(layers):
+def make_cnn_stack(layers, dropout=0.0):
     cnn_layers = []
     for i in range(len(layers)):
         cnn_layers.append(nn.Conv2d(**layers[i]))
         if i < len(layers)-2:
+            if dropout > 0:
+                nn_layers.append(nn.Dropout2d(dropout))
             cnn_layers.append(nn.ReLU(True))
 
     return cnn_layers

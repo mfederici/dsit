@@ -36,7 +36,9 @@ def check_config(config, flat_config):
         keys = key.split(SPLIT_TOKEN)
         for sub_key in keys[:-1]:
             sub_config = sub_config[sub_key]
-        assert sub_config[keys[-1]] == value
+        if sub_config[keys[-1]] != value:
+            print(keys[-1], sub_config[keys[-1]], value)
+            raise Exception()
 
 
 # Add the configuration to the experiment

@@ -1,6 +1,5 @@
 import torch.nn as nn
 from torch.distributions import Distribution
-import torch
 
 
 class Model(nn.Module):
@@ -8,14 +7,24 @@ class Model(nn.Module):
         raise NotImplemented()
 
 
-class GenerativeModel(Model):
-    def sample(self, shape: torch.Size):
+class RegularizedModel(Model):
+    def __init__(self, beta):
+        super(RegularizedModel, self).__init__()
+        self.beta = beta
+
+    def compute_loss(self, data, data_idx):
+        loss_components = self.compute_loss_components(data)
+
+        loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']
+
+        return {
+            'loss': loss,
+            'reconstruction': loss_components['reconstruction'].item(),
+            'regularization': loss_components['regularization'].item()
+        }
+
+    def compute_loss_components(self, data):
         raise NotImplemented()
-
-
-class RepresentationLearningModel(Model):
-    def encode(self, x: torch.Tensor):
-        raise NotImplemented
 
 
 class ConditionalDistribution(Model):

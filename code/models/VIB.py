@@ -1,36 +1,24 @@
 import torch
 from torch.distributions import Distribution
-from code.models.base import Model, ConditionalDistribution, MarginalDistribution
+from code.models.base import ConditionalDistribution, MarginalDistribution, RegularizedModel
 
 
 ######################################
 # Variational Information Bottleneck #
 ######################################
 
-class VariationalInformationBottleneck(Model):
+class VariationalInformationBottleneck(RegularizedModel):
     def __init__(self,
                    encoder: ConditionalDistribution,
                    predictor: ConditionalDistribution,
                    prior: MarginalDistribution,
                    beta: float
                    ):
-        super(VariationalInformationBottleneck, self).__init__()
+        super(VariationalInformationBottleneck, self).__init__(beta=beta)
 
         self.encoder = encoder
         self.predictor = predictor
         self.prior = prior
-        self.beta = beta
-
-    def compute_loss(self, data, data_idx):
-        loss_components = self.compute_loss_components(data)
-
-        loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']
-
-        return {
-            'loss': loss,
-            'reconstruction': loss_components['reconstruction'].item(),
-            'regularization': loss_components['regularization'].item()
-        }
 
     def compute_loss_components(self, data):
         x = data['x']

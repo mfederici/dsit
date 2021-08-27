@@ -1,6 +1,10 @@
 import torch
 from utils.distribution import DiscreteDistribution
 
+CMNIST_NAME = 'CMNIST'
+D_CMNIST_NAME = 'd-CMNIST'
+Y_CMNIST_NAME = 'y-CMNIST'
+CMNIST_VERSIONS = [CMNIST_NAME, D_CMNIST_NAME, Y_CMNIST_NAME]
 
 # function to make the CMNIST, d-CMNIST, and y-CMNIST distributions
 def make_joint_distribution(name):

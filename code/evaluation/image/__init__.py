@@ -1,3 +1,0 @@
-from code.evaluation.image.reconstruction import ImageReconstructionEvaluation
-from code.evaluation.image.sample import ImageSampleEvaluation
-from code.evaluation.image.landmarks import ImageLandmarksEvaluation
