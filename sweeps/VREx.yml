@@ -3,7 +3,7 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +experiment=VIB
+  - +experiment=VREx
   - +architectures=MLP
   - +trainer.max_epochs=200
   - run.project=dsit

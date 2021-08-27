@@ -1,0 +1,32 @@
+# @package _global_
+architectures:
+  prior:
+    _target_: code.architectures.base.DiagonalNormal
+    z_dim: ${params.z_dim}
+  predictor:
+    _target_: code.architectures.CMNIST.LatentClassifier
+    layers: ${params.classifier_layers}
+    dropout: ${params.predictor_dropout}
+    z_dim: ${params.z_dim}
+  encoder:
+    _target_: code.architectures.CMNIST.Encoder
+    layers: ${params.encoder_layers}
+    dropout: ${params.encoder_dropout}
+    z_dim: ${params.z_dim}
+  deterministic_encoder:
+    _target_: code.architectures.CMNIST.Encoder
+    layers: ${params.encoder_layers}
+    dropout: ${params.encoder_dropout}
+    z_dim: ${params.z_dim}
+    posterior: Delta
+
+# hyper-parameters for the architectures
+params:
+  z_dim: 64
+  beta: 0.1
+  lr: 1e-3
+  batch_size: 256
+  encoder_layers: [128, 128]
+  classifier_layers: [128, 128]
+  predictor_dropout: 0
+  encoder_dropout: 0.25

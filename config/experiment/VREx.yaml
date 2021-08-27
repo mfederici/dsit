@@ -3,12 +3,11 @@ defaults:
   - /data: CMNIST
   - /optimization: batch_ADAM_schedule
 
-# Definitions of the architectures used by the VIB model
+# Definitions of the architectures used by the VRex model
 model:
-  _target_: code.models.VariationalInformationBottleneck
-  prior: ${architectures.prior}
+  _target_: code.models.VREx
   predictor: ${architectures.predictor}
-  encoder: ${architectures.encoder}
+  encoder: ${architectures.deterministic_encoder}
   beta: ${params.beta}
 
 # Scheduler to determine the regularization strength while the model is training
@@ -16,5 +15,5 @@ beta_scheduler:
   _target_: code.utils.schedulers.LinearIncrementScheduler
   start_value: 0.00001
   start_iteration: 5000
-  increment_by: 0.00003
+  increment_by: 0.001
 

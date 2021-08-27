@@ -10,7 +10,7 @@ N_LABELS = 2
 
 # Model for q(Z|X)
 class Encoder(ConditionalDistribution):
-    def __init__(self, z_dim: int, layers: list, dropout: float = 0.0):
+    def __init__(self, z_dim: int, layers: list, dropout: float = 0.0, posterior: str = 'Normal'):
         '''
         Encoder network used to parametrize a conditional distribution
         :param z_dim: number of dimensions for the latent distribution
@@ -26,7 +26,7 @@ class Encoder(ConditionalDistribution):
             *nn_layers,  # The previously created stack
             nn.Dropout(dropout),
             nn.ReLU(True),  # A ReLU activation
-            StochasticLinear(layers[-1], z_dim, 'Normal')  # A layer that returns a factorized Normal distribution
+            StochasticLinear(layers[-1], z_dim, posterior)  # A layer that returns a parametrized distribution
         )
 
     def forward(self, x):
