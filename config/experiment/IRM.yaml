@@ -5,7 +5,7 @@ defaults:
 
 # Definitions of the architectures used by the VRex model
 model:
-  _target_: code.models.VREx
+  _target_: code.models.IRM
   predictor: ${architectures.predictor}
   beta: ${params.beta}
 
@@ -14,5 +14,5 @@ beta_scheduler:
   _target_: code.utils.schedulers.LinearIncrementScheduler
   start_value: 0.00001
   start_iteration: 5000
-  increment_by: 0.001
+  increment_by: 0.015
 

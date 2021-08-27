@@ -10,14 +10,14 @@ from code.models.base import ConditionalDistribution, MarginalDistribution, Regu
 class VariationalInformationBottleneck(RegularizedModel):
     def __init__(self,
                    encoder: ConditionalDistribution,
-                   predictor: ConditionalDistribution,
+                   latent_predictor: ConditionalDistribution,
                    prior: MarginalDistribution,
                    beta: float
                    ):
         super(VariationalInformationBottleneck, self).__init__(beta=beta)
 
         self.encoder = encoder
-        self.predictor = predictor
+        self.latent_predictor = latent_predictor
         self.prior = prior
 
     def compute_loss_components(self, data):
@@ -31,7 +31,7 @@ class VariationalInformationBottleneck(RegularizedModel):
         z = q_z_given_x.rsample()
 
         # Compute the reconstruction distribution
-        p_y_given_z = self.predictor(z)
+        p_y_given_z = self.latent_predictor(z)
 
         # The reconstruction loss is the expected negative log-likelihood of the input
         #  - E[log p(Y=y|Z=z)]
@@ -55,7 +55,7 @@ class VariationalInformationBottleneck(RegularizedModel):
             z = self.encoder(x).mean
 
         # Compute p(Y|Z=z)
-        p_y_given_z = self.predictor(z)
+        p_y_given_z = self.latent_predictor(z)
 
         return p_y_given_z
 

@@ -3,7 +3,7 @@ architectures:
   prior:
     _target_: code.architectures.base.DiagonalNormal
     z_dim: ${params.z_dim}
-  predictor:
+  latent_predictor:
     _target_: code.architectures.CMNIST.LatentClassifier
     layers: ${params.classifier_layers}
     dropout: ${params.predictor_dropout}
@@ -19,6 +19,11 @@ architectures:
     dropout: ${params.encoder_dropout}
     z_dim: ${params.z_dim}
     posterior: Delta
+  predictor:
+    _target_: code.architectures.utils.SequentialModel
+    models:
+      - ${architectures.deterministic_encoder}
+      - ${architectures.latent_predictor}
 
 # hyper-parameters for the architectures
 params:

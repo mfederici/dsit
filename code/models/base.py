@@ -6,7 +6,6 @@ class Model(nn.Module):
     def compute_loss(self, data, data_idx):
         raise NotImplemented()
 
-
 class RegularizedModel(Model):
     def __init__(self, beta):
         super(RegularizedModel, self).__init__()

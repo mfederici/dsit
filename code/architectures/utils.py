@@ -2,7 +2,7 @@ from abc import ABC
 
 import torch
 import torch.nn as nn
-from torch.distributions import Normal, Independent, Beta, Categorical, Bernoulli, Transform
+from torch.distributions import Normal, Independent, Beta, Categorical, Bernoulli, Distribution
 from pyro.distributions import Delta, TransformModule, constraints
 from torch.nn.functional import softplus
 import numpy as np
@@ -27,7 +27,7 @@ def make_cnn_stack(layers, dropout=0.0):
         cnn_layers.append(nn.Conv2d(**layers[i]))
         if i < len(layers)-2:
             if dropout > 0:
-                nn_layers.append(nn.Dropout2d(dropout))
+                cnn_layers.append(nn.Dropout2d(dropout))
             cnn_layers.append(nn.ReLU(True))
 
     return cnn_layers
@@ -41,6 +41,7 @@ def make_cnn_deconv_stack(layers):
             cnn_layers.append(nn.ReLU(True))
 
     return cnn_layers
+
 
 class Flatten(TransformModule):
     def __init__(self):
@@ -96,6 +97,22 @@ class Reshape(TransformModule):
             return output.reshape(-1, *self.in_shape)
         else:
             return output.view(-1, *self.in_shape)
+
+
+class SequentialModel(nn.Module):
+    def __init__(self, models):
+        super(SequentialModel, self).__init__()
+        for model in models:
+            assert isinstance(model, nn.Module)
+
+        self.models = nn.ModuleList(models)
+
+    def forward(self, x):
+        for model in self.models[:-1]:
+            x = model(x)
+            if isinstance(x, Distribution):
+                x = x.rsample()
+        return self.models[-1](x)
 
 
 class Permute(nn.Module):
