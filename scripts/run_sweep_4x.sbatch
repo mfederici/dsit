@@ -34,7 +34,7 @@ else
 fi
 
 # Make sure you are in the project directory
-cd $HOME/Documents/dl-kit
+cd $HOME/Documents/dsit
 
 
 
