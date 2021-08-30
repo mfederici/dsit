@@ -1,0 +1,10 @@
+_target_: code.optimization.AdversarialAdamBatchRegularizedOptimization
+
+model: ${model}
+data: ${data}
+lr: ${params.lr}
+disc_lr: ${params.disc_lr}
+n_adversarial_steps: ${params.n_adversarial_steps}
+num_workers: ${device.num_workers}
+batch_size: ${params.batch_size}
+beta_scheduler: ${beta_scheduler}

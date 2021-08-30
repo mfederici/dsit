@@ -6,6 +6,7 @@ class Model(nn.Module):
     def compute_loss(self, data, data_idx):
         raise NotImplemented()
 
+
 class RegularizedModel(Model):
     def __init__(self, beta):
         super(RegularizedModel, self).__init__()
@@ -22,8 +23,20 @@ class RegularizedModel(Model):
             'regularization': loss_components['regularization'].item()
         }
 
-    def compute_loss_components(self, data):
+
+class AdvarsarialModel(Model):
+    def compute_adversarial_loss(self, data, batch_idx):
         raise NotImplemented()
+
+
+class PredictiveModel(Model):
+    def predict(self, x, **kwargs):
+        raise NotImplemented()
+
+
+class RepresentationModel(Model):
+    def encode(self, x) -> Distribution:
+        return self.encoder(x)
 
 
 class ConditionalDistribution(Model):

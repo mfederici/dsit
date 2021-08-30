@@ -24,6 +24,7 @@ class AdamBatchOptimization(pl.LightningModule):
         self.num_workers = num_workers
         self.lr = lr
         self.pin_memory = pin_memory
+        self.iterations = 0
 
     # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self):
@@ -33,10 +34,15 @@ class AdamBatchOptimization(pl.LightningModule):
                           shuffle=True,
                           pin_memory=self.pin_memory)
 
-    def training_step(self, data, data_idx) -> STEP_OUTPUT:
-        loss_items = self.model.compute_loss(data, data_idx)
+    def log_components(self, loss_items):
         for name, value in loss_items.items():
             self.log('Train/%s' % name, value)
+        self.log('Train/iteration', self.iterations)
+
+    def training_step(self, data, data_idx) -> STEP_OUTPUT:
+        loss_items = self.model.compute_loss(data, data_idx)
+        self.log_components(loss_items)
+        self.iterations += 1
         return loss_items
 
     def configure_optimizers(self):
@@ -49,7 +55,7 @@ class AdamBatchRegularizedOptimization(AdamBatchOptimization):
         self.beta_scheduler = beta_scheduler
 
     def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
-        beta = self.beta_scheduler(self.trainer.global_step)
+        beta = self.beta_scheduler(self.iterations)
         self.model.beta = beta
         self.log('Train/beta', beta)
         return super(AdamBatchRegularizedOptimization, self).training_step(batch, batch_idx)

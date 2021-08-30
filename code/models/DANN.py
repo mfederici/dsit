@@ -1,29 +1,38 @@
 import torch
+import torch.nn as nn
 from torch.distributions import Distribution
-from code.models.base import ConditionalDistribution, MarginalDistribution, RegularizedModel, RepresentationModel, \
+from code.models.base import ConditionalDistribution, RegularizedModel, AdvarsarialModel, RepresentationModel, \
     PredictiveModel
 
 
 ######################################
-# Variational Information Bottleneck #
+# Domain Adversarial Neural Networks #
 ######################################
 
-class VariationalInformationBottleneck(RegularizedModel, RepresentationModel, PredictiveModel):
+class DANN(RegularizedModel, AdvarsarialModel, RepresentationModel, PredictiveModel):
     def __init__(self,
                    encoder: ConditionalDistribution,
                    latent_predictor: ConditionalDistribution,
-                   prior: MarginalDistribution,
+                   discriminator: ConditionalDistribution,
                    beta: float
                    ):
-        super(VariationalInformationBottleneck, self).__init__(beta=beta)
+        super(DANN, self).__init__(beta=beta)
 
         self.encoder = encoder
         self.latent_predictor = latent_predictor
-        self.prior = prior
+
+        self.generator = nn.ModuleDict({'encoder': encoder, 'latent_predictor': latent_predictor})
+        self.discriminator = discriminator
+
+    def compute_discriminative_regularization(self, z, e):
+        # The regularization loss is the log-probability of the environment when the representation is observed
+        p_e_given_z = self.discriminator(z)
+        return torch.mean(p_e_given_z.log_prob(e))
 
     def compute_loss_components(self, data):
         x = data['x']
         y = data['y']
+        e = data['e']
 
         # Encode a batch of data
         q_z_given_x = self.encoder(x)
@@ -38,11 +47,25 @@ class VariationalInformationBottleneck(RegularizedModel, RepresentationModel, Pr
         #  - E[log p(Y=y|Z=z)]
         rec_loss = - torch.mean(p_y_given_z.log_prob(y))
 
-        # The regularization loss is the KL-divergence between posterior and prior
-        # KL(q(Z|X=x)||p(Z)) = E[log q(Z=z|X=x) - log p(Z=z)]
-        reg_loss = torch.mean(q_z_given_x.log_prob(z) - self.prior().log_prob(z))
+        # Compute the adversarial regularization loss
+        reg_loss = self.compute_discriminative_regularization(z, e)
 
         return {'reconstruction': rec_loss, 'regularization': reg_loss}
+
+    def compute_adversarial_loss(self, data, batch_idx):
+        x = data['x']
+        e = data['e']
+
+        with torch.no_grad():
+            # Encode a batch of data
+            q_z_given_x = self.encoder(x)
+
+            # Sample the representation using the re-parametrization trick
+            z = q_z_given_x.sample()
+
+        loss = self.compute_discriminative_regularization(z, e)
+
+        return {'loss': loss}
 
     def predict(self, x, sample_latents=False) -> Distribution:
         # If specified sample the latent distribution

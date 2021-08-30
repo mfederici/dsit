@@ -2,14 +2,14 @@ import torch
 from torch.distributions import Distribution
 
 from code.architectures.utils import OneHot
-from code.models.base import ConditionalDistribution, MarginalDistribution, RegularizedModel
+from code.models.base import ConditionalDistribution, MarginalDistribution, RegularizedModel, PredictiveModel
 
 
 #####################################
 # Variance-based Risk Extrapolation #
 #####################################
 
-class VREx(RegularizedModel):
+class VREx(RegularizedModel, PredictiveModel):
     def __init__(self,
                    predictor: ConditionalDistribution,
                    beta: float,

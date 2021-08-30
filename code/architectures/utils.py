@@ -6,13 +6,17 @@ from torch.distributions import Normal, Independent, Beta, Categorical, Bernoull
 from pyro.distributions import Delta, TransformModule, constraints
 from torch.nn.functional import softplus
 import numpy as np
+from torch.nn.utils import spectral_norm as sn
 
 
 # Create simple layer stacks with relu activations
-def make_stack(layers, dropout=0.0):
+def make_stack(layers, dropout=0.0, spectral_norm=False):
     nn_layers = []
     for i in range(len(layers)-1):
-        nn_layers.append(nn.Linear(layers[i], layers[i+1]))
+        layer = nn.Linear(layers[i], layers[i+1])
+        if spectral_norm:
+            layer = sn(layer)
+        nn_layers.append(layer)
         if i < len(layers)-2:
             if dropout > 0:
                 nn_layers.append(nn.Dropout(dropout))
@@ -179,6 +183,9 @@ class StochasticLinear(nn.Linear):
             dist = None
 
         return dist
+
+    def extra_repr(self) -> str:
+        return "distribution=%s" % self.dist
 
 
 class StochasticLinear2D(StochasticLinear):

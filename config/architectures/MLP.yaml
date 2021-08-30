@@ -5,18 +5,18 @@ architectures:
     z_dim: ${params.z_dim}
   latent_predictor:
     _target_: code.architectures.CMNIST.LatentClassifier
-    layers: ${params.classifier_layers}
-    dropout: ${params.predictor_dropout}
+    layers: ${params.predictor.layers}
+    dropout: ${params.predictor.dropout}
     z_dim: ${params.z_dim}
   encoder:
     _target_: code.architectures.CMNIST.Encoder
-    layers: ${params.encoder_layers}
-    dropout: ${params.encoder_dropout}
+    layers: ${params.encoder.layers}
+    dropout: ${params.encoder.dropout}
     z_dim: ${params.z_dim}
   deterministic_encoder:
     _target_: code.architectures.CMNIST.Encoder
-    layers: ${params.encoder_layers}
-    dropout: ${params.encoder_dropout}
+    layers: ${params.encoder.layers}
+    dropout: ${params.encoder.dropout}
     z_dim: ${params.z_dim}
     posterior: Delta
   predictor:
@@ -24,14 +24,35 @@ architectures:
     models:
       - ${architectures.deterministic_encoder}
       - ${architectures.latent_predictor}
+  discriminator:
+    _target_: code.architectures.CMNIST.Discriminator
+    layers: ${params.discriminator.layers}
+    dropout: ${params.discriminator.dropout}
+    spectral_norm : ${params.discriminator.spectral_norm}
+    z_dim: ${params.z_dim}
+  joint_discriminator:
+    _target_: code.architectures.CMNIST.JointDiscriminator
+    layers: ${params.discriminator.layers}
+    dropout: ${params.discriminator.dropout}
+    spectral_norm: ${params.discriminator.spectral_norm}
+    z_dim: ${params.z_dim}
 
 # hyper-parameters for the architectures
 params:
   z_dim: 64
   beta: 0.1
-  lr: 1e-3
+  lr: 1e-4
+  disc_lr: 1e-4
   batch_size: 256
-  encoder_layers: [128, 128]
-  classifier_layers: [128, 128]
-  predictor_dropout: 0
-  encoder_dropout: 0.25
+  encoder:
+    layers: [128, 128]
+    dropout: 0.25
+  predictor:
+    layers: [128, 128]
+    dropout: 0
+  discriminator:
+    layers: [128, 128]
+    dropout: 0
+    spectral_norm: True
+  n_adversarial_steps: 10
+

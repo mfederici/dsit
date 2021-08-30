@@ -1,1 +1,2 @@
 from code.optimization.batch_ADAM import AdamBatchRegularizedOptimization
+from code.optimization.adversarial_batch_ADAM import AdversarialAdamBatchRegularizedOptimization

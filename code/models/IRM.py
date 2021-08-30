@@ -3,14 +3,14 @@ from torch.distributions import Distribution
 import torch.autograd as autograd
 import torch.nn.functional as F
 
-from code.models.base import ConditionalDistribution, RegularizedModel
+from code.models.base import ConditionalDistribution, RegularizedModel, PredictiveModel
 
 
 ###############################
 # Invarince Risk Minimization #
 ###############################
 
-class IRM(RegularizedModel):
+class IRM(RegularizedModel, PredictiveModel):
     def __init__(self,
                  predictor: ConditionalDistribution,
                  beta: float,
