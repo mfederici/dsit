@@ -11,12 +11,12 @@ class Optimization(pl.LightningModule):
         super(Optimization, self).__init__()
 
         self.counters = {
-            'iteration': 0,
-            'epoch': 0
+            'iterations': 0,
+            'epochs': 0
         }
 
     def on_epoch_end(self) -> None:
-        self.counters['epoch'] += 1
+        self.counters['epochs'] += 1
 
 
 class AdamBatchOptimization(Optimization):
@@ -56,7 +56,7 @@ class AdamBatchOptimization(Optimization):
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         loss_items = self.model.compute_loss(data, data_idx)
         self.log_components(loss_items)
-        self.counters['iteration'] += 1
+        self.counters['iterations'] += 1
         return loss_items
 
     def configure_optimizers(self):
@@ -69,7 +69,7 @@ class AdamBatchRegularizedOptimization(AdamBatchOptimization):
         self.beta_scheduler = beta_scheduler
 
     def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
-        beta = self.beta_scheduler(self.counters['iteration'])
+        beta = self.beta_scheduler(self.counters['iterations'])
         self.model.beta = beta
         self.log('Train/beta', beta)
         return super(AdamBatchRegularizedOptimization, self).training_step(batch, batch_idx)
