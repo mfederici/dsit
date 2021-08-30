@@ -21,21 +21,9 @@ class EvaluationCallback(pl.Callback):
         self.log_beginning = log_beginning
         self.pause_timers = pause_timers
 
-    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
-        if self.pause_timers:
-            # Pause all the timers
-            for callback in trainer.callbacks:
-                if isinstance(callback, EvaluationCallback):
-                    callback.stop_timer()
-
+    def evaluate(self, pl_module: pl.LightningModule):
         log_entry = self.evaluator.evaluate(pl_module)
-        trainer.logger.log(name=self.name, global_step=trainer.global_step, log_entry=log_entry)
-
-        if self.pause_timers:
-            # Restart the timers
-            for callback in trainer.callbacks:
-                if isinstance(callback, EvaluationCallback):
-                    callback.start_timer()
+        return log_entry
 
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
@@ -67,16 +55,40 @@ class EvaluationCallback(pl.Callback):
             return super().__getattribute__(item)
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        self.iterations = trainer.global_step
-        self.epochs = pl_module.current_epoch
+        for name, value in pl_module.counters.items():
+            setattr(self, name, value)
+
+        self.global_step = trainer.global_step
 
         if self.timer.is_time(self):
             self.timer.update(self)
-            self.evaluate(pl_module, trainer)
+            if self.pause_timers:
+                # Pause all the timers
+                for callback in trainer.callbacks:
+                    if isinstance(callback, EvaluationCallback):
+                        callback.stop_timer()
+
+            log_entry = self.evaluate(pl_module)
+            if hasattr(pl_module, 'counters'):
+                counters = pl_module.counters
+            else:
+                counters = None
+            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+
+            if self.pause_timers:
+                # Restart the timers
+                for callback in trainer.callbacks:
+                    if isinstance(callback, EvaluationCallback):
+                        callback.start_timer()
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if self.log_end:
-            self.evaluate(pl_module, trainer)
+            log_entry = self.evaluate(pl_module)
+            if hasattr(pl_module, 'counters'):
+                counters = pl_module.counters
+            else:
+                counters = None
+            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
 
 
 class LossItemsLogCallback(EvaluationCallback):
@@ -91,7 +103,7 @@ class LossItemsLogCallback(EvaluationCallback):
         self.mode = mode
         assert mode in ['mean', 'last']
 
-    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
+    def evaluate(self, pl_module: pl.LightningModule):
         if self.mode == 'mean':
             entry = {name: np.mean(value) for name, value in self.outputs.items()}
         elif self.mode == 'last':
@@ -99,12 +111,13 @@ class LossItemsLogCallback(EvaluationCallback):
         else:
             raise NotImplemented()
 
-        log_entry = LogEntry(value=entry, data_type=SCALARS_ENTRY)
-        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step)
+        return LogEntry(value=entry, data_type=SCALARS_ENTRY)
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        self.iterations = trainer.global_step
-        self.epochs = pl_module.current_epoch
+        for name, value in pl_module.counters.items():
+            setattr(self, name, value)
+
+        self.global_step = trainer.global_step
 
         for name, value in outputs.items():
             if not name in self.outputs:
@@ -113,4 +126,11 @@ class LossItemsLogCallback(EvaluationCallback):
 
         if self.timer.is_time(self):
             self.timer.update(self)
-            self.evaluate(pl_module, trainer)
+            log_entry = self.evaluate(pl_module)
+            if hasattr(pl_module, 'counters'):
+                counters = pl_module.counters
+            else:
+                counters = None
+            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+
+

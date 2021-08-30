@@ -3,6 +3,23 @@ from torch.utils.data import DataLoader
 from torch.optim import Adam
 import pytorch_lightning as pl
 from code.models.base import Model
+from typing import Any
+
+
+class Optimization(pl.LightningModule):
+    def __init__(self):
+        super(Optimization, self).__init__()
+
+        self.counters = {
+            'iteration': 0,
+            'epoch': 0
+        }
+
+    def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
+        self.counters['iteration'] += 1
+
+    def on_epoch_end(self) -> None:
+        self.counters['epoch'] += 1
 
 
 class AdamBatchOptimization(pl.LightningModule):
