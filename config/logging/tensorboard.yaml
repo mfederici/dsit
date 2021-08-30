@@ -8,3 +8,5 @@ extra_callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints
     save_last: true
+  - _target_: code.callbacks.TrainForCallback
+    train_for: ${train_for}

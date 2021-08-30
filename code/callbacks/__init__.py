@@ -1,2 +1,3 @@
 from code.callbacks.evaluation_callbacks import EvaluationCallback
 from code.callbacks.evaluation_callbacks import LossItemsLogCallback
+from code.callbacks.stop_training import TrainForCallback
