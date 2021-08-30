@@ -11,15 +11,15 @@ class Optimization(pl.LightningModule):
         super(Optimization, self).__init__()
 
         self.counters = {
-            'iteration': 0,
-            'epoch': 0
+            'iterations': 0,
+            'epochs': 0
         }
 
     def on_train_batch_end(self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int) -> None:
-        self.counters['iteration'] += 1
+        self.counters['iterations'] += 1
 
     def on_epoch_end(self) -> None:
-        self.counters['epoch'] += 1
+        self.counters['epochs'] += 1
 
 
 class AdamBatchOptimization(pl.LightningModule):
