@@ -56,7 +56,7 @@ class AdamBatchOptimization(Optimization):
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         loss_items = self.model.compute_loss(data, data_idx)
         self.log_components(loss_items)
-        self.counter.iteration += 1
+        self.counters['iteration'] += 1
         return loss_items
 
     def configure_optimizers(self):
