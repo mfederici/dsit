@@ -8,6 +8,7 @@ class AdversarialAdamBatchRegularizedOptimization(AdamBatchRegularizedOptimizati
         super(AdversarialAdamBatchRegularizedOptimization, self).__init__(**params)
         self.disc_lr = disc_lr
         self.n_adversarial_steps = n_adversarial_steps
+        self.counters['adversarial_iteration'] = 0
 
     def training_step(self, batch, batch_idx, optimizer_idx) -> STEP_OUTPUT:
         # Generator
@@ -17,6 +18,7 @@ class AdversarialAdamBatchRegularizedOptimization(AdamBatchRegularizedOptimizati
         elif optimizer_idx == 0:
             loss_items = self.model.compute_adversarial_loss(batch, batch_idx)
             self.log('Train/AdversarialLoss', loss_items['loss'])
+            self.counters['adversarial_iteration'] += 1
             return loss_items
 
     def configure_optimizers(self):
