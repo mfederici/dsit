@@ -21,9 +21,13 @@ class EvaluationCallback(pl.Callback):
         self.log_beginning = log_beginning
         self.pause_timers = pause_timers
 
-    def evaluate(self, pl_module: pl.LightningModule):
+    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
         log_entry = self.evaluator.evaluate(pl_module)
-        return log_entry
+        if hasattr(pl_module, 'counters'):
+            counters = pl_module.counters
+        else:
+            counters = None
+        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
 
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
@@ -68,12 +72,7 @@ class EvaluationCallback(pl.Callback):
                     if isinstance(callback, EvaluationCallback):
                         callback.stop_timer()
 
-            log_entry = self.evaluate(pl_module)
-            if hasattr(pl_module, 'counters'):
-                counters = pl_module.counters
-            else:
-                counters = None
-            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+            self.evaluate(pl_module, trainer)
 
             if self.pause_timers:
                 # Restart the timers
@@ -83,12 +82,7 @@ class EvaluationCallback(pl.Callback):
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if self.log_end:
-            log_entry = self.evaluate(pl_module)
-            if hasattr(pl_module, 'counters'):
-                counters = pl_module.counters
-            else:
-                counters = None
-            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+            self.evaluate(pl_module, trainer)
 
 
 class LossItemsLogCallback(EvaluationCallback):
@@ -103,7 +97,7 @@ class LossItemsLogCallback(EvaluationCallback):
         self.mode = mode
         assert mode in ['mean', 'last']
 
-    def evaluate(self, pl_module: pl.LightningModule):
+    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
         if self.mode == 'mean':
             entry = {name: np.mean(value) for name, value in self.outputs.items()}
         elif self.mode == 'last':
@@ -111,7 +105,12 @@ class LossItemsLogCallback(EvaluationCallback):
         else:
             raise NotImplemented()
 
-        return LogEntry(value=entry, data_type=SCALARS_ENTRY)
+        log_entry = LogEntry(value=entry, data_type=SCALARS_ENTRY)
+        if hasattr(pl_module, 'counters'):
+            counters = pl_module.counters
+        else:
+            counters = None
+        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         for name, value in pl_module.counters.items():
@@ -126,11 +125,7 @@ class LossItemsLogCallback(EvaluationCallback):
 
         if self.timer.is_time(self):
             self.timer.update(self)
-            log_entry = self.evaluate(pl_module)
-            if hasattr(pl_module, 'counters'):
-                counters = pl_module.counters
-            else:
-                counters = None
-            trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+            self.evaluate(pl_module, trainer)
+
 
 
