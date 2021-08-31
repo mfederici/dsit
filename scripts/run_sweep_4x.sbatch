@@ -36,21 +36,21 @@ fi
 # Make sure you are in the project directory
 cd $HOME/Documents/dsit
 
-
-
 # check wandb and python version
 which python
 which wandb
 
-# Generate cuda stats to check cuda is found
-nvidia-smi
-echo Starting
 
 # Run agent
-wandb agent $SWEEP &
-wandb agent $SWEEP &
-wandb agent $SWEEP &
-wandb agent $SWEEP &
+for I in 1 .. 4
+do
+    # Generate cuda stats to check cuda is found
+    nvidia-smi
+    echo STARTING AGENT $I
+    wandb agent $SWEEP &
+    sleep 10
+done
+
 wait
 
 echo Done
