@@ -4,26 +4,28 @@ class TimeInterval:
         self.unit = freq.split()[1].lower()
         self.last_logged = 0
 
-    def is_time(self, model):
-        if hasattr(model, self.unit):
-            unit = self.unit
-        elif self.unit.endswith('s') and hasattr(model, self.unit[:-1]):
-            unit = self.unit[:-1]
-        if not hasattr(model, self.unit):
-            raise Exception('Invalid unit %s' % (self.unit))
+    def get_value(self, counters):
+        if self.unit in counters:
+            value = counters[self.unit]
+        elif self.unit.endswith('s') and self.unit[:-1] in counters:
+            value = counters[self.unit[:-1]]
+        else:
+            raise Exception(
+                'Invalid unit %s, the valid options are %s' % (
+                    self.unit,
+                    ', '.join([c+'(s)' for c in counters]))
+            )
+        return value
 
-        curr_value = getattr(model, unit)
+    def is_time(self, counters):
+        return (self.get_value(counters) - self.last_logged) >= self.freq
 
-        return (curr_value-self.last_logged) >= self.freq
+    def update(self, counters):
+        self.last_logged = self.get_value(counters)
 
-    def update(self, model):
-        self.last_logged = getattr(model, self.unit)
+    def get_progress(self, counters):
+        return self.get_value(counters)-self.last_logged
 
-    def get_progress(self, model):
-        curr_value = getattr(model, self.unit)
-        return curr_value-self.last_logged
-
-    def percentage(self, model):
-        curr_value = getattr(model, self.unit)
-        return int((curr_value-self.last_logged)/self.freq * 100)
+    def percentage(self, counters):
+        return int((self.get_value(counters)-self.last_logged)/self.freq * 100)
 

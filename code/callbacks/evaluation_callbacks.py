@@ -1,19 +1,15 @@
 import pytorch_lightning as pl
-import time
 import numpy as np
 
+from code.callbacks.timed_callback import TimedCallback
 from code.loggers.log_entry import SCALARS_ENTRY, LogEntry
-from code.utils.time import TimeInterval
 
 
-class EvaluationCallback(pl.Callback):
+class EvaluationCallback(TimedCallback):
     # Only one unit is currently supported: `10 minutes 10 seconds` is not a valid value
     def __init__(self, name, evaluator, evaluate_every, log_end=True, log_beginning=True, pause_timers=True):
-        self.timer = TimeInterval(evaluate_every)
-        self._seconds = 0
-        self.last_time = 0
-        self.iterations = 0
-        self.epochs = 0
+        super(EvaluationCallback, self).__init__(time=evaluate_every)
+
         self.evaluator = evaluator
         self.name = name
         self.timer_active = False
@@ -21,58 +17,39 @@ class EvaluationCallback(pl.Callback):
         self.log_beginning = log_beginning
         self.pause_timers = pause_timers
 
-    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
+    def evaluate(self, pl_module: pl.LightningModule):
         log_entry = self.evaluator.evaluate(pl_module)
         if hasattr(pl_module, 'counters'):
             counters = pl_module.counters
         else:
             counters = None
-        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+        pl_module.trainer.logger.log(
+            name=self.name,
+            log_entry=log_entry,
+            global_step=pl_module.trainer.global_step,
+            counters=counters
+        )
 
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
         if self.log_beginning:
-            self.evaluate(pl_module, trainer)
-
-    def start_timer(self):
-        self.last_time = time.time()
-        self.timer_active = True
-
-    def stop_timer(self):
-        self.seconds
-        self.timer_active = False
-
-    def __getattribute__(self, item):
-        if item == 'seconds':
-            if self.timer_active:
-                current_time = time.time()
-                self._seconds += current_time - self.last_time
-                self.last_time = current_time
-            return self._seconds
-        elif item == 'minutes':
-            return self.seconds / 60.
-        elif item == 'hours':
-            return self.minutes / 60.
-        elif item == 'days':
-            return self.hours / 24.
-        else:
-            return super().__getattribute__(item)
+            self.evaluate(pl_module)
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         for name, value in pl_module.counters.items():
             setattr(self, name, value)
 
-        self.global_step = trainer.global_step
+        counters = self.get_counters(pl_module)
 
-        if self.timer.is_time(self):
-            self.timer.update(self)
+        if self.timer.is_time(counters):
+            self.timer.update(counters)
             if self.pause_timers:
                 # Pause all the timers
                 for callback in trainer.callbacks:
                     if isinstance(callback, EvaluationCallback):
                         callback.stop_timer()
 
-            self.evaluate(pl_module, trainer)
+            self.evaluate(pl_module)
 
             if self.pause_timers:
                 # Restart the timers
@@ -82,7 +59,7 @@ class EvaluationCallback(pl.Callback):
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if self.log_end:
-            self.evaluate(pl_module, trainer)
+            self.evaluate(pl_module)
 
 
 class LossItemsLogCallback(EvaluationCallback):
@@ -97,7 +74,7 @@ class LossItemsLogCallback(EvaluationCallback):
         self.mode = mode
         assert mode in ['mean', 'last']
 
-    def evaluate(self, pl_module: pl.LightningModule, trainer: pl.Trainer):
+    def evaluate(self, pl_module: pl.LightningModule):
         if self.mode == 'mean':
             entry = {name: np.mean(value) for name, value in self.outputs.items()}
         elif self.mode == 'last':
@@ -110,22 +87,18 @@ class LossItemsLogCallback(EvaluationCallback):
             counters = pl_module.counters
         else:
             counters = None
-        trainer.logger.log(name=self.name, log_entry=log_entry, global_step=trainer.global_step, counters=counters)
+
+        pl_module.trainer.logger.log(
+            name=self.name,
+            log_entry=log_entry,
+            global_step=pl_module.trainer.global_step,
+            counters=counters
+        )
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        for name, value in pl_module.counters.items():
-            setattr(self, name, value)
 
-        self.global_step = trainer.global_step
+        counters = self.get_counters(pl_module)
 
-        for name, value in outputs.items():
-            if not name in self.outputs:
-                self.outputs[name] = []
-            self.outputs[name].append(value)
-
-        if self.timer.is_time(self):
-            self.timer.update(self)
-            self.evaluate(pl_module, trainer)
-
-
-
+        if self.timer.is_time(counters):
+            self.timer.update(counters)
+            self.evaluate(pl_module)
