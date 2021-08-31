@@ -2,6 +2,8 @@
 defaults:
   - /data: CMNIST
   - /optimization: batch_ADAM_schedule
+  - /architectures: MLP
+
 
 # Definitions of the architectures used by the VIB model
 model:
