@@ -3,7 +3,6 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +experiment=VIB
   - +evaluation=default
   - architectures=MLP
   - +train_for="50000 iterations"
@@ -11,13 +10,21 @@ command:
   - ${args_no_hyphens}
 method: grid
 parameters:
-  seed:
+  +experiment:
     values:
-      - 7
-      - 42
-      - 1024
+      - DANN
+      - CDANN
+      - IRM
+      - VREx
+      - VIB
   data:
     values:
       - CMNIST
       - d-CMNIST
       - y-CMNIST
+  seed:
+    values:
+      - 7
+      - 42
+      - 1024
+

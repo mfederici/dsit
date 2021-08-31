@@ -5,8 +5,8 @@ command:
   - ${program}
   - +experiment=IRM
   - +evaluation=default
-  - +architectures=MLP
-  - +trainer.max_epochs=200
+  - architectures=MLP
+  - +train_for="50000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid

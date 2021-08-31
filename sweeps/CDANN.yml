@@ -3,7 +3,7 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +experiment=VIB
+  - +experiment=CDANN
   - +evaluation=default
   - architectures=MLP
   - +train_for="50000 iterations"

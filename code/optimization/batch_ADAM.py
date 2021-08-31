@@ -64,7 +64,7 @@ class AdamBatchRegularizedOptimization(AdamBatchOptimization):
         self.beta_scheduler = beta_scheduler
 
     def training_step(self, batch, batch_idx) -> STEP_OUTPUT:
-        beta = self.beta_scheduler(self.counters['iterations'])
+        beta = self.beta_scheduler(self.counters['iteration'])
         self.model.beta = beta
         self.log('Train/beta', beta)
         return super(AdamBatchRegularizedOptimization, self).training_step(batch, batch_idx)
