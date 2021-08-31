@@ -1,17 +1,15 @@
 import pytorch_lightning as pl
-import time
 import numpy as np
 
+from code.callbacks.timed_callback import TimedCallback
 from code.loggers.log_entry import SCALARS_ENTRY, LogEntry
-from code.utils.time import TimeInterval
 
 
-class EvaluationCallback(pl.Callback):
+class EvaluationCallback(TimedCallback):
     # Only one unit is currently supported: `10 minutes 10 seconds` is not a valid value
     def __init__(self, name, evaluator, evaluate_every, log_end=True, log_beginning=True, pause_timers=True):
-        self.timer = TimeInterval(evaluate_every)
-        self._seconds = 0
-        self.last_time = 0
+        super(EvaluationCallback, self).__init__(time=evaluate_every)
+
         self.evaluator = evaluator
         self.name = name
         self.timer_active = False
@@ -36,35 +34,6 @@ class EvaluationCallback(pl.Callback):
         self.start_timer()
         if self.log_beginning:
             self.evaluate(pl_module)
-
-    def start_timer(self):
-        self.last_time = time.time()
-        self.timer_active = True
-
-    def stop_timer(self):
-        self.get_seconds()
-        self.timer_active = False
-
-    def get_seconds(self):
-        if self.timer_active:
-            current_time = time.time()
-            self._seconds += current_time - self.last_time
-            self.last_time = current_time
-        return self._seconds
-
-    def get_counters(self, pl_module):
-        if hasattr(pl_module, 'counters'):
-            counters = {k: v for k, v in pl_module.counters.items()}
-        else:
-            counters = {}
-        counters['global_step'] = pl_module.trainer.global_step
-        counters['epoch'] = pl_module.current_epoch
-        counters['second'] = self.get_seconds()
-        counters['minute'] = counters['second'] // 60
-        counters['hour'] = counters['minute'] // 60
-        counters['day'] = counters['hour'] // 24
-
-        return counters
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
         for name, value in pl_module.counters.items():

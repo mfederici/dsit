@@ -10,7 +10,7 @@ class Optimization(pl.LightningModule):
         super(Optimization, self).__init__()
 
         self.counters = {
-            'iterations': 0,
+            'iteration': 0,
         }
 
 
