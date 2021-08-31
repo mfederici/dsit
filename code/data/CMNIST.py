@@ -19,6 +19,7 @@ MNIST_TRAIN_SPLITS = [MNIST_TRAIN, MNIST_VALID, MNIST_TRAIN_VALID]
 MNIST_SPLITS = MNIST_TRAIN_SPLITS + [MNIST_TEST]
 MNIST_TRAIN_EXAMPLES = 50000
 
+
 # Wrapper for the torchvision MNIST dataset with validation split
 class MNIST(Dataset):
     def __init__(self, root, split, **params):

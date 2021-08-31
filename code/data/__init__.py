@@ -1,1 +1,1 @@
-from code.data.cmnist import CMNIST
+from code.data.CMNIST import CMNIST

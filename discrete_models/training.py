@@ -4,7 +4,7 @@ import numpy as np
 from tqdm.notebook import tqdm
 from torch.optim import Adam
 
-from utils.distribution import compute_ce
+from discrete_distributions.distribution import compute_ce
 
 
 def train(encoder, criterion, train_dist, test_dist,

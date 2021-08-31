@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils.distribution import DiscreteDistribution
+from discrete_distributions.distribution import DiscreteDistribution
 
 
 # Model for q(z|x) using a learnable weight matrix
