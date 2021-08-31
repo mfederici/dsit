@@ -42,7 +42,7 @@ which wandb
 
 
 # Run agent
-for I in 1 .. 5
+for I in 1 2
 do
     # Generate cuda stats to check cuda is found
     nvidia-smi

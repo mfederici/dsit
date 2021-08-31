@@ -10,21 +10,22 @@ command:
   - ${args_no_hyphens}
 method: grid
 parameters:
-  +experiment:
-    values:
-      - DANN
-      - CDANN
-      - IRM
-      - VREx
-      - VIB
-  data:
-    values:
-      - CMNIST
-      - d-CMNIST
-      - y-CMNIST
   seed:
     values:
       - 7
       - 42
       - 1024
+  data:
+    values:
+      - CMNIST
+      - d-CMNIST
+      - y-CMNIST
+  +experiment:
+    values:
+      - IRM
+      - DANN
+      - CDANN
+      - VREx
+      - VIB
+
 

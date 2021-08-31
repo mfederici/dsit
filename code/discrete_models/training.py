@@ -1,10 +1,10 @@
 import torch
 import numpy as np
 
-from tqdm.notebook import tqdm
+from tqdm.auto import tqdm
 from torch.optim import Adam
 
-from discrete_distributions.distribution import compute_ce
+from code.discrete_distributions import compute_ce
 
 
 def train(encoder, criterion, train_dist, test_dist,
@@ -25,8 +25,8 @@ def train(encoder, criterion, train_dist, test_dist,
             if i % log_every == 0:
                 with torch.no_grad():
                     logs.append({
-                        'OOD Cross-entropy': compute_ce(encoder(test_dist).marginal(['y', 'z']),
-                                                        encoder(train_dist).conditional('y', 'z')).item(),
+                        'Test Cross-entropy': compute_ce(encoder(test_dist).marginal(['y', 'z']),
+                                                         encoder(train_dist).conditional('y', 'z')).item(),
                         'Train Cross-entropy': encoder(train_dist).h('y', 'z').item(),
                         'iteration': iteration
                     })
@@ -44,7 +44,7 @@ def train(encoder, criterion, train_dist, test_dist,
             distance = np.sqrt((train_ce - last_train_ce) ** 2 + (test_ce - last_test_ce) ** 2)
             if distance <= tollerance:
                 if verbose:
-                    print('Done')
+                    tqdm.write('Done')
                 break
             elif verbose:
                 tqdm.write('Distance: %f>%f' % (distance, tollerance))

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from code.architectures.utils import Flatten, StochasticLinear, make_stack, OneHot
+from code.architectures.utils import Flatten, StochasticLinear, make_stack, OneHot, make_cnn_stack
 from code.models.base import ConditionalDistribution
 
 INPUT_SHAPE = [2, 28, 28]
@@ -34,6 +34,31 @@ class Encoder(ConditionalDistribution):
         # Note that the encoder returns a factorized normal distribution and not a vector
         return self.net(x)
 
+
+# Model for q(Z|X)
+class ConvolutionalEncoder(ConditionalDistribution):
+    def __init__(self, z_dim: int, layers: list, dropout: float = 0.0, conv_flat_size=128, posterior: str = 'Normal'):
+        '''
+        Encoder network used to parametrize a conditional distribution
+        :param z_dim: number of dimensions for the latent distribution
+        :param layers: list describing the layers
+        '''
+        super(ConvolutionalEncoder, self).__init__()
+
+        # Create a stack of layers with ReLU activations as specified
+        nn_layers = make_cnn_stack(list(layers), dropout=dropout)
+
+        self.net = nn.Sequential(
+            *nn_layers,  # The previously created stack
+            Flatten(),  # Layer to flatten the input
+            nn.Dropout(dropout),
+            nn.ReLU(True),  # A ReLU activation
+            StochasticLinear(conv_flat_size, z_dim, posterior)  # A layer that returns a parametrized distribution
+        )
+
+    def forward(self, x):
+        # Note that the encoder returns a factorized normal distribution and not a vector
+        return self.net(x)
 
 # q(Y|Z)
 class LatentClassifier(ConditionalDistribution):

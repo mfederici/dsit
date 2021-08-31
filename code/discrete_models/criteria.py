@@ -13,25 +13,25 @@ class Criterion:
         raise NotImplemented
 
 
-# Information Bottleneck Criterion: -I(y;z) + reg*I(x;z)
+# Information Bottleneck Criterion: reg = I(x;z)
 class InformationBottleneckCriterion(Criterion):
     def r(self, dist):
         return dist.mi('x', 'z')
 
 
-# Independence Criterion: -I(y;z) + reg*I(e;z)
+# Independence Criterion: reg = I(e;z)
 class IndependenceCriterion(Criterion):
     def r(self, dist):
         return dist.mi('e', 'z')
 
 
-# Sufficiency Criterion: -I(y;z) + reg*I(e;y|z)
+# Sufficiency Criterion: reg = I(e;y|z)
 class SufficiencyCriterion(Criterion):
     def r(self, dist):
         return dist.mi('e', 'y', 'z')
 
 
-# Separation Criterion: -I(y;z) + reg*I(e;z|y)
+# Separation Criterion: reg = I(e;z|y)
 class SeparationCriterion(Criterion):
     def r(self, dist):
         return dist.mi('e', 'z', 'y')

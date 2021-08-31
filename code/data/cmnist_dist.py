@@ -1,5 +1,5 @@
 import torch
-from discrete_distributions import DiscreteDistribution
+from code.discrete_distributions import DiscreteDistribution
 
 CMNIST_NAME = 'CMNIST'
 D_CMNIST_NAME = 'd-CMNIST'
