@@ -5,9 +5,14 @@ class TimeInterval:
         self.last_logged = 0
 
     def is_time(self, model):
+        if hasattr(model, self.unit):
+            unit = self.unit
+        elif self.unit.endswith('s') and hasattr(model, self.unit[:-1]):
+            unit = self.unit[:-1]
         if not hasattr(model, self.unit):
             raise Exception('Invalid unit %s' % (self.unit))
-        curr_value = getattr(model, self.unit)
+
+        curr_value = getattr(model, unit)
 
         return (curr_value-self.last_logged) >= self.freq
 

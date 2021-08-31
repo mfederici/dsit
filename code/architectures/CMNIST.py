@@ -80,7 +80,7 @@ class JointDiscriminator(Discriminator):
         self.one_hot = OneHot(N_LABELS)
 
     def forward(self, z, y):
-        y = self.one_hot(y)
+        y = self.one_hot(y.long())
         zy = torch.cat([z, y], 1)
         # Note that the encoder returns a Categorical distribution and not a vector
         return self.net(zy)

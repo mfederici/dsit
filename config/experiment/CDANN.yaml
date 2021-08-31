@@ -6,10 +6,10 @@ defaults:
 
 # Definitions of the architectures used by the VIB model
 model:
-  _target_: code.models.DANN
+  _target_: code.models.CDANN
   encoder: ${architectures.deterministic_encoder}
   latent_predictor: ${architectures.latent_predictor}
-  discriminator: ${architectures.discriminator}
+  discriminator: ${architectures.joint_discriminator}
   beta: ${params.beta}
 
 # Scheduler to determine the regularization strength while the model is training

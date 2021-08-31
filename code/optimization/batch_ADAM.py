@@ -11,12 +11,8 @@ class Optimization(pl.LightningModule):
         super(Optimization, self).__init__()
 
         self.counters = {
-            'iterations': 0,
-            'epochs': 0
+            'iteration': 0,
         }
-
-    def on_epoch_end(self) -> None:
-        self.counters['epochs'] += 1
 
 
 class AdamBatchOptimization(Optimization):
@@ -37,7 +33,6 @@ class AdamBatchOptimization(Optimization):
         self.num_workers = num_workers
         self.lr = lr
         self.pin_memory = pin_memory
-        self.iterations = 0
 
     # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self):
@@ -56,7 +51,7 @@ class AdamBatchOptimization(Optimization):
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         loss_items = self.model.compute_loss(data, data_idx)
         self.log_components(loss_items)
-        self.counters['iterations'] += 1
+        self.counters['iteration'] += 1
         return loss_items
 
     def configure_optimizers(self):
