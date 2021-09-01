@@ -87,10 +87,16 @@ class Discriminator(ConditionalDistribution):
         # Create a stack of layers with ReLU activations as specified
         nn_layers = make_stack([z_dim] + list(layers), dropout=dropout, spectral_norm=spectral_norm)
 
+        if spectral_norm:
+            last_layer = spectral_norm(StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical'))
+        else:
+            last_layer = StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical')
+
         self.net = nn.Sequential(
             *nn_layers,  # The previously created stack
             nn.ReLU(True),  # A ReLU activation
-            StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical')  # A layer that returns a Categorical distribution
+              # A layer that returns a Categorical distribution
+            last_layer
         )
 
     def forward(self, z):

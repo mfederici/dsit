@@ -4,6 +4,7 @@ trainer:
   logger:
     _target_: code.loggers.TensorBoardLogger
     save_dir: ${run.dir}
+  auto_select_gpus: True
 extra_callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints
