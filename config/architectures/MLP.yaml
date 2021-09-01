@@ -48,7 +48,7 @@ params:
     layers: [128, 128]
     dropout: 0.25
   predictor:
-    layers: [128, 128]
+    layers: [128]
     dropout: 0
   discriminator:
     layers: [128, 128]
