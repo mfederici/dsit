@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from code.architectures.utils import Flatten, StochasticLinear, make_stack, OneHot, make_cnn_stack
 from code.models.base import ConditionalDistribution
+from torch.nn.utils import spectral_norm as sn
 
 INPUT_SHAPE = [2, 28, 28]
 N_INPUTS = 2*28*28
@@ -88,7 +89,7 @@ class Discriminator(ConditionalDistribution):
         nn_layers = make_stack([z_dim] + list(layers), dropout=dropout, spectral_norm=spectral_norm)
 
         if spectral_norm:
-            last_layer = spectral_norm(StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical'))
+            last_layer = sn(StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical'))
         else:
             last_layer = StochasticLinear(layers[-1], N_TRAIN_ENVS, 'Categorical')
 
