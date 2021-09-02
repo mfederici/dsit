@@ -45,7 +45,7 @@ params:
   disc_lr: 1e-4
   batch_size: 256
   encoder:
-    layers: [128, 128]
+    layers: [1024, 128]
     dropout: 0.25
   predictor:
     layers: [128]
