@@ -62,7 +62,7 @@ params:
     dropout: 0.25
     conv_flat_size: 128
   predictor:
-    layers: [1024, 128]
+    layers: [128]
     dropout: 0
   discriminator:
     layers: [1024, 128]
