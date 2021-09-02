@@ -13,6 +13,7 @@ class RegularizedModel(Model):
         self.beta = beta
 
     def compute_loss(self, data, data_idx):
+        self.train()
         loss_components = self.compute_loss_components(data)
 
         loss = loss_components['reconstruction'] + self.beta * loss_components['regularization']

@@ -61,6 +61,8 @@ class DANN(RegularizedModel, AdvarsarialModel, RepresentationModel, PredictiveMo
         x = data['x']
         e = data['e']
 
+        self.discriminator.train()
+
         with torch.no_grad():
             # Encode a batch of data
             q_z_given_x = self.encoder(x)
@@ -123,6 +125,8 @@ class CDANN(DANN):
         x = data['x']
         y = data['y']
         e = data['e']
+
+        self.discriminator.train()
 
         with torch.no_grad():
             # Encode a batch of data
