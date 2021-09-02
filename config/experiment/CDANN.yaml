@@ -16,7 +16,7 @@ model:
 beta_scheduler:
   _target_: code.utils.schedulers.LinearIncrementScheduler
   start_value: 0.00001
-  start_iteration: 2000
+  start_iteration: 3000
   increment_by: 0.02
 
 trainer:
