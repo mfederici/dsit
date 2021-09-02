@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --gres=gpu:4
 #SBATCH --mem=10G
-#SBATCH --cpus-per-task=16
-#SBATCH --time 10:00:00
+#SBATCH --cpus-per-task=32
+#SBATCH --time 48:00:00
 #SBATCH --ntasks=1
 #SBATCH --priority=TOP
 #SBATCH --job-name=sweep
