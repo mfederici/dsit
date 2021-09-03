@@ -51,7 +51,7 @@ params:
     layers: [128]
     dropout: 0
   discriminator:
-    layers: [128, 128]
+    layers: [1024, 128]
     dropout: 0
     spectral_norm: True
   n_adversarial_steps: 10

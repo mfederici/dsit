@@ -8,14 +8,14 @@ from code.models.base import ConditionalDistribution, MarginalDistribution, Regu
 # Variational Information Bottleneck #
 ######################################
 
-class VariationalInformationBottleneck(RegularizedModel, RepresentationModel, PredictiveModel):
+class VIB(RegularizedModel, RepresentationModel, PredictiveModel):
     def __init__(self,
                    encoder: ConditionalDistribution,
                    latent_predictor: ConditionalDistribution,
                    prior: MarginalDistribution,
                    beta: float
                    ):
-        super(VariationalInformationBottleneck, self).__init__(beta=beta)
+        super(VIB, self).__init__(beta=beta)
 
         self.encoder = encoder
         self.latent_predictor = latent_predictor

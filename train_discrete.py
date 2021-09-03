@@ -9,7 +9,7 @@ from code.data.cmnist_dist import make_joint_distribution, CMNIST_VERSIONS
 from tqdm.auto import tqdm
 import pandas as pd
 
-n = 20
+n = 50
 criteria = [
     {
         'name': 'Information Bottleneck',

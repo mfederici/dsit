@@ -7,7 +7,7 @@ defaults:
 
 # Definitions of the architectures used by the VIB model
 model:
-  _target_: code.models.VariationalInformationBottleneck
+  _target_: code.models.VIB
   prior: ${architectures.prior}
   latent_predictor: ${architectures.latent_predictor}
   encoder: ${architectures.encoder}
