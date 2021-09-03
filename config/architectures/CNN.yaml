@@ -69,4 +69,3 @@ params:
     dropout: 0
     spectral_norm: True
   n_adversarial_steps: 10
-

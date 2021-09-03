@@ -4,3 +4,4 @@ download_files: True
 num_workers: 32
 pin_memory: True
 gpus: 1
+auto_select_gpus: True

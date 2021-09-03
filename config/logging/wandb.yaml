@@ -1,12 +1,12 @@
 # @package _global_
 trainer:
   checkpoint_callback: False
+  auto_select_gpus: ${device.auto_select_gpus}
   logger:
     _target_: code.loggers.WandbLogger
     project: ${run.project}
     name: ${run.name}
     save_dir: ${run.dir}
-  auto_select_gpus: True
 extra_callbacks:
   - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
     save_last: true

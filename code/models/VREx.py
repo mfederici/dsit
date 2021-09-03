@@ -45,7 +45,7 @@ class VREx(RegularizedModel, PredictiveModel):
         e = data['e']
 
         # Encode a batch of data
-        q_y_given_x = self.prefictor(x)
+        q_y_given_x = self.predictor(x)
 
         # The reconstruction loss is the expected negative log-likelihood of the input
         #  - E[log p(Y=y|Z=z)]

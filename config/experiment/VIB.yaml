@@ -9,7 +9,7 @@ defaults:
 model:
   _target_: code.models.VariationalInformationBottleneck
   prior: ${architectures.prior}
-  predictor: ${architectures.latent_predictor}
+  latent_predictor: ${architectures.latent_predictor}
   encoder: ${architectures.encoder}
   beta: ${params.beta}
 
