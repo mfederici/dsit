@@ -14,7 +14,7 @@ criteria = [
     {
         'name': 'Information Bottleneck',
         'class': InformationBottleneckCriterion,
-        'lambdas': np.exp(np.linspace(0, np.log(10), n))-1
+        'lambdas': np.exp(np.linspace(0, np.log(2), n))-1
     },
     {
         'name': 'Independence',

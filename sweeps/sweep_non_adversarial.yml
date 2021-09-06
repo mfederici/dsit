@@ -23,7 +23,5 @@ parameters:
   +experiment:
     values:
       - IRM
-      - DANN
-      - CDANN
       - VREx
       - VIB

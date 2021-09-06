@@ -4,7 +4,7 @@ command:
   - ${interpreter}
   - ${program}
   - +evaluation=default
-  - architectures=MLP
+  - architectures=CNN
   - +train_for="25000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
@@ -23,7 +23,5 @@ parameters:
   +experiment:
     values:
       - IRM
-      - DANN
-      - CDANN
       - VREx
       - VIB

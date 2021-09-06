@@ -22,8 +22,5 @@ parameters:
       - y-CMNIST
   +experiment:
     values:
-      - IRM
-      - DANN
       - CDANN
-      - VREx
-      - VIB
+      - DANN
