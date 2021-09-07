@@ -1,8 +1,9 @@
 defaults:
   - device: ${oc.env:DEVICE_NAME}
   - logging: wandb
+  - eval_params: fast_training
 
-callbacks: []
+train_for: 100 epochs
 
 trainer:
   _target_: pytorch_lightning.Trainer

@@ -4,7 +4,7 @@ trainer:
   logger:
     _target_: code.loggers.TensorBoardLogger
     save_dir: ${run.dir}
-extra_callbacks:
+callbacks:
   - _target_: pytorch_lightning.callbacks.ModelCheckpoint
     dirpath: ${run.dir}/default/checkpoints
     save_last: true

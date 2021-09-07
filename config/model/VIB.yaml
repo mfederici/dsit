@@ -1,0 +1,5 @@
+_target_: code.models.supervised.VariationalInformationBottleneck
+prior: ${architectures.prior}
+predictor: ${architectures.predictor}
+encoder: ${architectures.encoder}
+beta: ${params.beta}

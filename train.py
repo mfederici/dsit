@@ -5,6 +5,7 @@ from omegaconf import DictConfig
 
 from pytorch_lightning.loggers import WandbLogger
 
+from code.callbacks import EvaluationCallback
 from code.utils.wandb_utils import add_config
 from pytorch_lightning import seed_everything
 
@@ -27,10 +28,28 @@ def parse(conf: DictConfig):
 
         # Add all the callbacks to the trainer (for logging, checkpointing, ...)
         if not trainer.fast_dev_run:
+
+            # Evaluation Callbacks
+            if 'evaluation' in conf:
+                for name, eval_params in conf.evaluation.items():
+
+                    # Instantiate the evaluator
+                    evaluator = instantiate(eval_params['evaluator'])
+
+                    # Create a corresponding evaluation callback
+                    callback = EvaluationCallback(
+                        name=name,
+                        evaluator=evaluator,
+                        evaluate_every=eval_params['evaluate_every']
+                    )
+
+                    # And add it to the trainer
+                    trainer.callbacks.append(
+                        callback
+                    )
+
+            # Add the rest of the callbacks
             for callback_conf in conf.callbacks:
-                callback = instantiate(callback_conf)
-                trainer.callbacks.append(callback)
-            for callback_conf in conf.extra_callbacks:
                 callback = instantiate(callback_conf)
                 trainer.callbacks.append(callback)
 

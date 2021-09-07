@@ -1,0 +1,8 @@
+Images/Reconstruction:
+  evaluate_every: ${eval_params.reconstruction.every}
+  evaluator:
+    _target_: code.evaluation.image.ImageReconstructionEvaluation
+    evaluate_on: ${eval_params.reconstruction.evaluate_on}
+    n_pictures: ${eval_params.reconstruction.n_samples}
+    sample_images: False
+    sample_latents: ${eval_params.reconstruction.sample_latents}

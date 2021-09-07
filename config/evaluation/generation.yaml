@@ -1,0 +1,5 @@
+Images/Samples:
+  evaluate_every: ${eval_params.samples.every}
+  evaluator:
+    _target_: code.evaluation.image.ImageSampleEvaluation
+    n_pictures: ${eval_params.samples.n_samples}

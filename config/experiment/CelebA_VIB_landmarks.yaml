@@ -1,8 +1,15 @@
 # @package _global_
 defaults:
   - /data: CelebA
+  - /architectures: CelebA
+  - /model: VIB
   - /optimization: batch_ADAM
+  - /evaluation:
+      - elbo
+      - landmark_visualization
+  - /eval_params: medium_dataset
 
+# add a flag to the datasets so that they can return the landmark annotations
 data:
   train:
     target_type: landmarks
@@ -11,74 +18,9 @@ data:
   test:
     target_type: landmarks
 
-model:
-  _target_: code.models.supervised.VariationalInformationBottleneck
-  prior:
-    _target_: code.architectures.base.DiagonalNormal
-    z_dim: ${params.z_dim}
-  predictor:
-    _target_: code.architectures.CelebA.LandmarkPredictor
-    z_dim: ${params.z_dim}
-    layers: ${params.landmark_predictor_layers}
-  encoder:
-    _target_: code.architectures.CelebA.Encoder
-    layers: ${params.encoder_layers}
-    z_dim: ${params.z_dim}
-  beta: ${params.beta}
-
-callbacks:
-  - _target_: code.callbacks.EvaluationCallback
-    name: ELBO/Validation
-    evaluate_every: 120 seconds
-    evaluator:
-      _target_: code.evaluation.elbo.ErrorComponentsEvaluation
-      evaluate_on: valid
-      n_samples: 2048
-  - _target_: code.callbacks.EvaluationCallback
-    name: ELBO/Train
-    evaluate_every: 120 seconds
-    evaluator:
-      _target_: code.evaluation.elbo.ErrorComponentsEvaluation
-      evaluate_on: train
-      n_samples: 2048
-  - _target_: code.callbacks.EvaluationCallback
-    name: Images/Landmarks
-    evaluate_every: 1 minutes
-    evaluator:
-      _target_: code.evaluation.image.ImageLandmarksEvaluation
-      evaluate_on: valid
-      n_pictures: 10
-      sample_images: False
-      sample_latents: False
-      padding: [20, 0]
-
-
-params:
-  z_dim: 64
-  beta: 0.5
-  lr: 1e-3
-  batch_size: 32
-  encoder_layers:
-    - in_channels: 3
-      out_channels: 64
-      kernel_size: 5
-      stride: 2
-    - in_channels: 64
-      out_channels: 128
-      kernel_size: 7
-      stride: 3
-    - in_channels: 128
-      out_channels: 256
-      kernel_size: 7
-      stride: 3
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 7
-      stride: 3
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 2
-      stride: 1
-  landmark_predictor_layers: [1024, 128, 32]
+# override the padding for landmark evaluation (pictures are shifted by 20 pixels)
+eval_params:
+  landmarks:
+    padding: [ 20, 0]
 
 seed: 42
