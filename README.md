@@ -11,7 +11,7 @@ architectures and datasets
 - **Clarity/Readability**: each model contains only the data-agnostic and architecture agnostic-logic.
 
 Main features:
-- Get all the perks of a Pytorch [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- Get all the perks of a Pytorch [Lightning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
 - Use the Weights & Bias [sweep tool](https://docs.wandb.ai/guides/sweeps) 
 to easily define hyper-parameters search and launch multiple agents across different devices.
 - Easily handle complex configuration thanks to the powerful [Hydra configuration management](https://hydra.cc/docs/intro/).
@@ -161,7 +161,7 @@ The configuration for each run is composed by the following main components:
 - [**params**](#hyper-parameters): collection of the model, architecture, optimization and data hyper-parameters (e.g. 
   number of layers, learning rate, batch size, regularization strength, ...). This design allows for easy definition of 
   [sweeps and hyper-parameter tuning](https://docs.wandb.ai/guides/sweeps).
-- [**trainer**](#trainer): Extra parameters passed to the [Ligthning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- [**trainer**](#trainer): Extra parameters passed to the [Lightning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
 - [**callbacks**](#callbacks): the callbacks called during training. Different callbacks can be used for logging, 
 [evaluation](#evaluation), [model checkpointing](#checkpoints) or early stopping. 
   See [the corresponding documentation](https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html) 
@@ -508,6 +508,11 @@ class AdamBatchOptimization(pl.LightningModule):
         # Log the loss components
         for name, value in loss_items.items():
             self.log('Train/%s' % name, value)
+            
+        # Increment the iteration counts.
+        # The self.counters dictionary can be used to define custom counts
+        # (e.g number of adversarial/generator iterations during adversarial training)
+        self.counters['iteration'] += 1
         
         return loss_items
     
@@ -515,7 +520,7 @@ class AdamBatchOptimization(pl.LightningModule):
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.lr)
 ```
-Each optimization procedure is a Pytorch Ligthning module, therefore it is possible to extend all the corresponding
+Each optimization procedure is a Pytorch Lightning module, therefore it is possible to extend all the corresponding
  [functions](https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html) for customized 
 training/data loading.
 
@@ -580,7 +585,7 @@ The corresponding configuration is reported in the [experiment definition exampl
 defined in the previous section.
 
 ### Checkpoints
-The current implementation makes use of the Pytorch Ligthning [Checkpoint Callback](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html)
+The current implementation makes use of the Pytorch Lightning [Checkpoint Callback](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html)
 with a [slight adaptation](code/callbacks/checkpoints.py) for Weight and Bias.
 Basic Checkpoint callbacks are added into the 'config/logging' configuration.
 

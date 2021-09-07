@@ -45,6 +45,7 @@ class AdamBatchOptimization(pl.LightningModule):
         loss_items = self.model.compute_loss(data, data_idx)
         for name, value in loss_items.items():
             self.log('Train/%s' % name, value)
+        self.counters['iteration'] += 1
         return loss_items
 
     def configure_optimizers(self):
