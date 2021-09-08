@@ -36,8 +36,6 @@ fi
 # Make sure you are in the project directory
 cd $HOME/Documents/dl-kit
 
-
-
 # check wandb and python version
 which python
 which wandb
