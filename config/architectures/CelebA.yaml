@@ -1,69 +1,16 @@
-# @package _global_
-architectures:
-  prior:
-    _target_: code.architectures.base.DiagonalNormal
-    z_dim: ${params.z_dim}
-  encoder:
-    _target_: code.architectures.CelebA.Encoder
-    layers: ${params.encoder_layers}
-    z_dim: ${params.z_dim}
-  decoder:
-    _target_: code.architectures.CelebA.Decoder
-    z_dim: ${params.z_dim}
-    layers: ${params.decoder_layers}
-    sigma: ${params.sigma}
-  predictor:
-    _target_: code.architectures.MNIST.LatentClassifier
-    layers: ${params.classifier_layers}
-    z_dim: ${params.z_dim}
-
-params:
-  z_dim: 64
-  beta: 0.005
-  lr: 1e-4
-  batch_size: 64
-  sigma: 1
-  encoder_layers:
-    - in_channels: 3
-      out_channels: 64
-      kernel_size: 5
-      stride: 2
-    - in_channels: 64
-      out_channels: 128
-      kernel_size: 7
-      stride: 3
-    - in_channels: 128
-      out_channels: 256
-      kernel_size: 7
-      stride: 3
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 7
-      stride: 3
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 2
-      stride: 1
-  decoder_layers:
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 2
-      stride: 1
-    - in_channels: 256
-      out_channels: 256
-      kernel_size: 7
-      stride: 3
-    - in_channels: 256
-      out_channels: 128
-      kernel_size: 7
-      stride: 3
-    - in_channels: 128
-      out_channels: 64
-      kernel_size: 7
-      stride: 3
-    - in_channels: 64
-      out_channels: 3
-      kernel_size: 8
-      stride: 2
-  landmark_predictor_layers: [1024, 128, 32]
-
+prior:
+  _target_: code.architectures.base.DiagonalNormal
+  z_dim: ${params.z_dim}
+encoder:
+  _target_: code.architectures.CelebA.Encoder
+  layers: ${params.encoder_layers}
+  z_dim: ${params.z_dim}
+decoder:
+  _target_: code.architectures.CelebA.Decoder
+  z_dim: ${params.z_dim}
+  layers: ${params.decoder_layers}
+  sigma: ${params.sigma}
+predictor:
+  _target_: code.architectures.CelebA.LandmarkPredictor
+  layers: ${params.predictor_layers}
+  z_dim: ${params.z_dim}

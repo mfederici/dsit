@@ -1,7 +1,6 @@
 defaults:
   - device: ${oc.env:DEVICE_NAME}
   - logging: wandb
-  - eval_params: fast_training
 
 train_for: 100 epochs
 

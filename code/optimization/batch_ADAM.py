@@ -14,7 +14,7 @@ class Optimization(pl.LightningModule):
         }
 
 
-class AdamBatchOptimization(pl.LightningModule):
+class AdamBatchOptimization(Optimization):
     def __init__(self,
                  model: Model,              # The model to optimize
                  data: dict,                # The dictionary of Datasets defined in the previous 'Data' section

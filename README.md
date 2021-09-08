@@ -139,7 +139,7 @@ once the corresponding wandb sweep has been created.
 
 It is possible to start an agent on the das5 cluster using the provided scripts with:
 ```shell
-sbatch --export=DEVICE_NAME=das5,SWEEP=<SWEEP_ID> scripts/run_sweep_2h.sbatch
+sbatch --export=DEVICE_NAME=$DEVICE_NAME,SWEEP=<SWEEP_ID> scripts/run_sweep_2h.sbatch
 ```
 in which the `--export` flag is used to pass variables to the script, and <SWEEP_ID> refer to the string
 produced when running the `wandb sweep` command (see previous section).
@@ -152,7 +152,7 @@ The configuration for each run is composed by the following main components:
 - [**data**](#data): the data used for training the models. See section for further 
   information.
 - [**model**](#Models) : the model to train. Each model must implement the logic regarding the loss computation
-(e.g. `VAE`, `GAN`, `VIB`, ...) and functionalities (e.g. `sample`, `reconstruct`, `classify`,...) in architecture and 
+  (e.g. `VAE`, `GAN`, `VIB`, ...) and functionalities (e.g. `sample`, `reconstruct`, `classify`,...) in architecture and 
   data-agnostic fashion. Each model is an instance of a [Pytorch Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html).
 - [**optimization**](#optimization-procedures): the procedure used for optimizing the model. Definition on how the model is updated by the optimizer 
   (e.g. standanrd step update, adversarial training, joint training of two models, optimizer type, batch-creation procedure). Each optimization procedure is an 
@@ -161,16 +161,18 @@ The configuration for each run is composed by the following main components:
 - [**params**](#hyper-parameters): collection of the model, architecture, optimization and data hyper-parameters (e.g. 
   number of layers, learning rate, batch size, regularization strength, ...). This design allows for easy definition of 
   [sweeps and hyper-parameter tuning](https://docs.wandb.ai/guides/sweeps).
-- [**trainer**](#trainer): Extra parameters passed to the [Lightning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
-- [**callbacks**](#callbacks): the callbacks called during training. Different callbacks can be used for logging, 
-[evaluation](#evaluation), [model checkpointing](#checkpoints) or early stopping. 
-  See [the corresponding documentation](https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html) 
-  for further details. Note that callbacks are fully optional.
+- [**evaluation**](#evaluation): Dictionary containing metrics that need to be logged and their corresponding logging
+  frequency.
 - [**device**](#device): Definition of the hardware-specific parameters (such as paths, CPU cores, number of GPUs)
+- [**trainer**](#trainer): Extra parameters passed to the [Lightning Trainer](https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html)
+- [**callbacks**](#callbacks): the callbacks called during training. Different callbacks can be used for logging, [model checkpointing](#checkpoints) or early stopping. 
+  See [the corresponding documentation](https://pytorch-lightning.readthedocs.io/en/latest/extensions/callbacks.html)
+  for further details. Note that callbacks are fully optional.
 - [**logger**](#loggers): Definition of the logging procedure. Both TensorBoard and Weights & Bias are supported.
 - [**run**](#run-details): Properties of the run such as name and the corresponding project
 
-While `data`, `model`, `architectures`, `optimization procedure`, `parameters`, `callbacks` and `run` are experiment-specific, 
+
+  While `data`, `model`, `architectures`, `optimization procedure`, `parameters`, `evaluation`, `callbacks` and `run` are experiment-specific, 
 `device`, `logging` and `trainer` define global properties of the device on which the experiments are running, 
 the logging and training parameters respectively.
 
@@ -179,121 +181,88 @@ Each experiment `.yaml` configuration file contains a definition of data, model,
 hyper-parameters and callbacks. 
 Here we report an example for the 
 [Variational Autoencoder Model trained on the MNIST dataset](config/experiment/MNIST_VAE.yaml).
-
-First we refer to `MNIST` dataset and `batch_ADAM` optimization procedure defined in
-the [data](config/data/MNIST.yaml), and [optimization](config/optimization/batch_ADAM.yaml) configuration files respectively:
 ```yaml
 # @package _global_
 defaults:
-  - /data: MNIST
-  - /optimization: batch_ADAM
+  - /data: MNIST                  # On the MNIST dataset
+  - /optimization: batch_ADAM     # Use batch-based optimization with Adam optimizer
+  - /model: VAE                   # For a VAE model
+  - /architectures: MNIST         # With the appropriate architectures
+  - /evaluation:                  # And evaluate:
+    - reconstruction              # The reconstructions (on validation set)
+    - generation                  # The images sampled from the model
+    - elbo                        # The value of ELBO (on train and validation)
+
+seed: 42                          # Set a fixed seed for reproducibility
+
+# Name of the run and project
+run:
+  project: VAE_experiments        # set the name of the project (`noname` by default)
+  name: My_First_VAE              # Name of the run (used by Weights & Biases)
+  
+# Values of the hyper-parameters
+params:
+  z_dim: 64                       # Number of latent dimensions
+  beta: 0.5                       # Value of regularization strength
+  lr: 1e-3                        # Learning rate
+  batch_size: 128                 # Batch size
+  encoder_layers: [ 1024, 128 ]   # Layers of the encoder model
+  decoder_layers: [ 128, 1024 ]   # Layers of the decoder model
+
+# Parameters for the evaluation (such as frequency or number of samples)
+eval_params:
+  elbo:
+    every: 1 minute               # Compute ELBO every minute 
+    n_samples: 2048               # using 2048 samples
+  samples:
+    every: 1 minute               # Visualize samples for the generative model every minute
+    n_samples: 10                 # Number of visualized samples
+  reconstruction:
+    every: 1 minute               # Show the reconstruction every minutes
+    evaluate_on: valid            # of pictures from the validation set
+    n_samples: 10                 # pick 10 of them
 ```
 The `# @package _global_` line is used to indicate that the following keys are global, while `defaults` specifies 
-the values for `data` and `optimization` procedures respectively. 
-In other words, the dictionary defined in the files `data/MNIST.yaml` and `optimization/batch_ADAM.yaml` are added 
-to the `data` and `optimization` keys respectively.
+the values for `data`, `optimization`, `model`, `architectures` and `evluation` procedures respectively. 
+In other words, the dictionary defined in the files [`config/data/MNIST.yaml`](config/data/MNIST.yaml), 
+[`config/optimization/batch_ADAM.yaml`](config/optimization/batch_ADAM.yaml), [`config/model/VAE.yaml`](config/model/VAE.yaml), 
+[`config/architectures/MNIST.yaml`](`config/architectures/MNIST.yaml`)  and 
+[`config/evaluation/reconstruction.yaml`](config/evaluation/reconstruction.yaml) (and the other evaluation metrics) are added 
+to the respective keys.
+All the configuration that is used to launch an experiment will be stored inside a `hydra` folder for the 
+corresponding run.
 
 Further information regarding configuration packages and overrides can be found 
 [here](https://hydra.cc/docs/advanced/overriding_packages).
 
-The [VAE model](code/models/unsupervised/VAE.py) requires the definition of an `encoder`, `decoder` and `prior` architectures: 
-```yaml
-model:
-  _target_: code.models.unsupervised.VariationalAutoencoder # class defining the VAE model
-  beta: ${params.beta}                                      # read the regularization strength beta from params.beta
-  
-  prior:                                                    # Prior distribution
-    _target_: code.architectures.base.DiagonalNormal        # class defining a Normal distribution with diagonal covariance
-    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim 
+All the hyper-parameters regarding architectures and optimization are grouped under the `params` dictionary.
+This structure makes the configuration file extremely easy to read and understand, with the added value of making it easy
+to change the value of hyper-parameters.
 
-  encoder:                                                  # Encoder architecture
-    _target_: code.architectures.MNIST.Encoder              
-    layers: ${params.encoder_layers}                        # read the layers from params.encoder_layers
-    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim
-    
-  decoder:                                                  # Decoder architecture
-    _target_: code.architectures.MNIST.Decoder
-    layers: ${params.decoder_layers}                        # read the layers from params.encoder_layers
-    z_dim: ${params.z_dim}                                  # read the latent size from params.z_dim
+The parameters required by the evaluation metrics are grouped in the `eval_params` dictionary,
+which is responsible to define details regarding the evaluation procedure (and the logging frequency).
 
+To summarize, each experiments defines the following:
+- `data`: data configuration
+- `architectures`: which set of architectures to use
+- `model`: which model (objective, what architectures and hyperparameters are needed)
+- `optimization`: definition of the optimization procedure (SGD, Adversarial, others...)
+- `params`: list of hyper-parameters (from model, architectures, data and optimization procedure)
+- `evaluation` (optional): list of evaluation metrics to log
+- `eval_params` (optional): list of evaluation parameters
+
+Note that the values defined in the experiments can be altered directly from the command line.
+For example, by running
+```shell
+python train.py +experiment=MNIST_VAE params.beta=0.0001 train_for="30 minutes"
 ```
-The `_target_` key contains references to Python classes, while the other values are passed to the 
-`__init__()` constructor on initialization (e.g. `Encoder(layers, z_dim)` is called when instantiating the encoder architecture).
+one can overwrite the value of `params.beta`, changing it from `0.01` to `0.0001`, and set the
+total training time to `30 minutes`.
 
-Note that instead of writing the value of the hyper-parameters (such as the number of latents `z_dim` or regularization 
-strength `beta`) directly in the architecture definition, we refer to the `params` section (e.g. `${params.z_dim}`, 
-`${params.beta}`) so that all the hyper-parameters of model, architectures and optimization procedure are grouped together:
-```yaml
-params:                               # List of hyper-parameters
-  z_dim: 64                           # Number of latent dimensions
-  beta: 0.5                           # KL regularization strength
-  encoder_layers: [ 1024, 128 ]       # List of hidden layers for the encoder
-  decoder_layers: [ 128, 1024 ]       # and decoder architectures
-  lr: 1e-3                            # Learning rate
-  batch_size: 128                     # Batch size
-```
-Lastly, a list of callbacks defines all the evaluation metrics that are logged during training:
-```yaml
-callbacks:
-  # Logging the validation image reconstructions 
-  - _target_: code.callbacks.EvaluationCallback      # Utility callback for evaluation that logs every 'evaluate_every'
-    name: Images/Reconstruction              # Name reported in the log
-    evaluate_every: 60 seconds                        # Evaluation time (in seconds, minutes, hours, iterations or epochs)
-    evaluator:
-      _target_: code.evaluation.image.ImageReconstructionEvaluation # Class defining the evaluation
-      evaluate_on: valid
-      n_pictures: 10
-      sample_images: False
-      sample_latents: False
-      
-  # Logging the samples of the generative model
-  - _target_: code.callbacks.EvaluationCallback
-    name: Images/Samples
-    evaluate_every: 60 seconds
-    evaluator:
-      _target_: code.evaluation.image.ImageSampleEvaluation
-      evaluate_on: valid
-      n_pictures: 10
-      
-  # Logging the value or the Evidence Lower BOund (ELBO) computed on the validation set
-  - _target_: code.callbacks.EvaluationCallback
-    name: ELBO/Validation
-    evaluate_every: 30 seconds
-    evaluator:
-      _target_: code.evaluation.elbo.ELBOEvaluation
-      evaluate_on: valid
-      n_samples: 2048
-  
-  # Logging the value or the Evidence Lower BOund (ELBO) computed on the train set
-  - _target_: code.callbacks.EvaluationCallback
-    name: ELBO/Train
-    evaluate_every: 30 seconds
-    evaluator:
-      _target_: code.evaluation.elbo.ELBOEvaluation
-      evaluate_on: train
-      n_samples: 2048
-```
-To summarize, the log will consist of the following entries:
-- ImageReconstruction/Validation: reconstruction of images from the validation set, logged every 60 seconds
-- Samples: images sampled from the prior.
-- ELBO/Validation: Evidence LOwer Bound computed on the validation set 
-- ELBO/Train: Evidence LOwer Bound computed on the train set
-Further details regarding the `EvaluationCallback` utility class and the evaluation procedures can be found in the 
-[corresponding section](#callbacks)
+Further details regarding the aforementioned configuration components can be found in the following sections.
 
-We specify a name for the project in which the run will be saved (with will correspond to `WANDB_PROJECT` in case of 
-Weights & Bias logging):
-```yaml
-run:
-  project: VAE_experiments
-```
 
-Lastly, we can define a run seed:
-```yaml
-seed: 42
-```
 
-Further details regarding the aforementioned configuration components can be found in the following sections
 # Creating new Implementations
 
 Adding new models, datasets and architectures to the frameworks requires implementing the code and creating the 
@@ -302,14 +271,14 @@ Here we report the conventions used to define the different components:
 
 ## Data
 The datasets definition are collected in the [`data` configuration folder](config/data). Each data object consist
-of a dictionary specifying the parameters for the different splits. By default, we consider `train`, `valid`, and `test`
-for training, validation and testing purpose respectively. Different keys can be added to the `data` dictionary if necessary:
+of a dictionary specifying the parameters for the different splits. In this example, we consider `train`, `valid`, and `test`
+for training, validation and testing purpose respectively, but different keys can be added to the `data` dictionary if necessary:
 ```yaml
 # Content of /config/data/MNIST.yaml. the corresponding keys are added under `data`
 train:                                      # Definition of the training set
-  _target_: code.data.MNIST.MNISTWrapper    # Class
-  root: ${device.data_root}                 # Initialization parameters
-  split: train
+  _target_: code.data.MNIST.MNISTWrapper    # Class 
+  root: ${device.data_root}                 # Initialization parameters (passed to the constructor)
+  split: train                          
   download: ${device.download_files}
 
 valid:
@@ -324,8 +293,10 @@ test:
   split: test
   download: ${device.download_files}
 ```
-Note that all the device-dependent parameters (such as the data directory and the flag to enable downloading)
-refer to the `${device}` variable. This allows to easily deploy the same model to different devices. Further details can
+While reading the configuration, the variables `${NAME.ATTRIBUTE}` will be resolved 
+to the corresponding value.
+All the device-dependent parameters (such as the data directory and the flag to enable downloading)
+refer to the `${device}` variable. This strategy allows to easily deploy the same model to different devices. Further details can
 be found in the [device section](#device).
 
 TorchVision, TorchAudio or other existing datasets class definitions can be referenced directly by specifying
@@ -335,24 +306,27 @@ The instantiated `data` dictionary is passed to the constructor of the [optimiza
 in which the data-loaders are defined.
 
 ## Models
-The model configuration defines the parameters and architectures used by the specific model (see example reported 
-[the previous section](#defining-new-experiments)). The model code is designed to be completely data-agnostic
+The model configuration defines the parameters and references to required architectures. The model code is designed to be completely data-agnostic
 so that the same logic can be used across different experiments without any re-writing or patch.
 Here we report the example code for the `VariationalAutoencoder` [model](code/models/unsupervised/VAE.py):
 ```python
+# the VariationalAutoencoder class is a torch.nn.Module that: 
+#  - inherits the `sample()` method from GenerativeModel,
+#  - inherits the `encode(x)` method from RepresentationLearningModel.
+# This inheritance structure is useful to better define what models can be used for and how
 class VariationalAutoencoder(GenerativeModel, RepresentationLearningModel):
     def __init__(
             self,
-            encoder: ConditionalDistribution,
+            encoder: ConditionalDistribution, 
             decoder: ConditionalDistribution,
             prior: MarginalDistribution,
             beta: float
     ):
         '''
         Variational Autoencoder Model
-        :param encoder: the encoder architecture
-        :param decoder: the decoder architecture
-        :param prior: architecture representing the prior
+        :param encoder: the encoder architecture (as a nn.Module : (Tensor) -> Distribution)
+        :param decoder: the decoder architecture (as a nn.Module : (Tensor) -> Distribution)
+        :param prior: architecture representing the prior (as a nn.Module : () -> Distribution)
         :param beta: trade-off between regularization and reconstruction coefficient
         '''
         super(VariationalAutoencoder, self).__init__()
@@ -429,7 +403,22 @@ Note that the code for the Variational Autoencoder model is completely independe
 architectures. Therefore, the same model can be used on all datasets without any need to rewrite or change the code as 
 long as the different data types are handled correctly by the respective encoder and decoder architectures.
 
-### Architectures 
+The corresponding [configuration file](config/model/VAE.yaml) defines where the required architectures and parameters 
+are defined:
+```yaml
+_target_: code.models.unsupervised.VariationalAutoencoder   # The VAE class defined above
+prior: ${architectures.prior}                               # pass the architecture.prior as the prior
+decoder: ${architectures.decoder}                           # architectures.decoder as the decoder
+encoder: ${architectures.encoder}                           # archidectures.encoder as the encoder
+beta: ${params.beta}                                        # and params.beta for the regularization strength
+
+```
+Note that this configuration acts as linker that defines where the different components have to be looked up in other 
+parts of the configuration. This is useful because one can use the VAE model on completely different datasets
+just by swapping in and out different values for the `architectures` without modifying the code defining the logic
+of the model.
+
+## Architectures 
 Different architectures are implemented in the `code/architectures` folder. Each architecture is designed for a specific 
 role (e.g. `Encoder`, `Decoder`, `Predictor`, ...), as a result the same architecture can be used in multiple models.
 Since the architecture code is data-dependent, each dataset will correspond to a different set of architectures.
@@ -442,6 +431,7 @@ N_LABELS = 10
 
 
 # Model for q(Z|X)
+# The forward method is designed to map from a Tensor to a Distribution
 class Encoder(ConditionalDistribution):
     def __init__(self, z_dim: int, layers: list):
         '''
@@ -465,25 +455,41 @@ class Encoder(ConditionalDistribution):
         # Note that the encoder returns a factorized normal distribution and not a vector
         return self.net(x)
 ```
+The [corresponding configuration](config/architectures/MNIST.yaml) links the parameters of the encoder model to the 
+`params` values:
+```yaml
+# @package _global_
+architectures:
+  encoder:
+    _target_: code.architectures.MNIST.Encoder  # Class to instantiate
+    layers: ${params.encoder_layers}            # List passed as the layers definition
+    z_dim: ${params.z_dim}                      # Size of latent dimensions
+
+# The rest of the architectures are defined below...
+```
+Note that the `architecture` file defines the linking for the architectures used by any model (and not only the `VAE`).
+At run time only the required keys will be dynamically looked up.
 
 ## Optimization procedures
 The optimization procedure is designed to contain the logic regarding how the model is updated over time.
-This includes the definition of optimizers, data-loaders and learning-rate schedulers.
-Once again, the optimization procedure is designed to be modular and model-agnostic. Here we report the example
+This includes the definition of optimizers, data-loaders (or environments for reinforcement learning) and learning-rate schedulers.
+Once again, the optimization procedure is designed to be modular and as independent from the other components as 
+possible (model-agnostic). Here we report the example
 for the a [batch-based training procedure with the ADAM optimizer](code/optimization/batch_ADAM.py):
 ```python
 # Each optimization procedure is a pytorch lightning module
-class AdamBatchOptimization(pl.LightningModule):
+class AdamBatchOptimization(Optimization):
     def __init__(self,
-                 model: Model,          # The model to optimize
+                 model: Model,          # The model to optimize (as a nn.Module)
                  data: dict,            # The dictionary of Datasets defined in the previous 'Data' section
                  num_workers: int,      # Number of workers for the data_loader
                  batch_size: int,       # Batch size
-                 lr: float,              # Learning rate
+                 lr: float,             # Learning rate
                  pin_memory: bool=True  # Flag to enable memory pinning
                  ):
         super(AdamBatchOptimization, self).__init__()
-
+        
+        # Assigned the variables passed to the constructor as internal attributes
         self.model = model
         self.data = data
 
@@ -492,15 +498,17 @@ class AdamBatchOptimization(pl.LightningModule):
         self.lr = lr
         self.pin_memory = pin_memory
 
-    # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
+    # Overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self) -> DataLoader:
+        # Return a DataLoader for the `train` dataset with the specified batch_size
         return DataLoader(self.data['train'],
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=True,
                           pin_memory=self.pin_memory)
 
-    # The training step simply returns the computation from the model after logging its entries
+    # The training step simply returns the computation from the model 
+    # and logs the loss entries
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         # Compute the loss using the compute_loss function from the model
         loss_items = self.model.compute_loss(data, data_idx)
@@ -525,64 +533,93 @@ Each optimization procedure is a Pytorch Lightning module, therefore it is possi
 training/data loading.
 
 The corresponding [configuration file](config/optimization/batch_ADAM.yaml) simply defines the references for the
-parameters of the constructor:
+parameters of the constructor accessing either the hyper-parameters in `params` or device-specific configuration in 
+`device` (which depends on the number of CPU cores and presence of a GPU):
 ```yaml
 _target_: code.optimization.batch_ADAM.AdamBatchOptimization
 
-model: ${model}
-data: ${data}
-lr: ${params.lr}
-num_workers: ${device.num_workers}
-batch_size: ${params.batch_size}
-pin_memory: ${device.pin_memory}
+model: ${model}                         # Reference to the model
+data: ${data}                           # And dataset(s)
+lr: ${params.lr}                        # Pointing to the value of learning rate
+batch_size: ${params.batch_size}        # and batch size in `params`
+num_workers: ${device.num_workers}      # Looking up the number of workers
+pin_memory: ${device.pin_memory}        # and if memory pinning is used from the device config
 ```
-Once again the device-specic configuration refers to the `device` component, while hyper-parameters point to the values
-in `params`.
 
 The `optimization.model` and `optimization.data` components point to `model` and `data` global keys respectively, which 
 are defined in the [data](#data) and [model](#models) sections.
 
+
+## Evaluation
+For easy and flexible evaluation, we defined a customized and extensible evaluation procedure using 
+[Pytorch Lighning callbacks](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
+A custom [`EvaluationCallback`](code/callbacks/evaluation_callbacks.py) calls an 
+[`EvaluationProcedure`](code/evaluation/base.py) at pre-defined time intervals (in `global_steps`, `epochs`, `seconds`, 
+`minutes`, `hours`, `days` or any unit defined in the `counter` dictionary attribute of the `OptimizationProcedure`).
+
+This allows to easily define `Evaluation` procedures that map an instance of `Optimization` (containing `model` and `data`)
+to a `LogEntry`. Here we report the example for a class creating images samples for a generative model:
+```python
+
+# The evaluation must extend the base class Evaluation
+class ImageSampleEvaluation(Evaluation):
+    # Constructor containing the evaluation parameters.
+    def __init__(self, n_pictures=10, sampling_params=None):
+        self.n_pictures = n_pictures
+        self.sampling_params = sampling_params if not(sampling_params is None) else dict()
+    
+    # Definition of the evaluation function 
+    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
+      
+      # Get the model from the optimization procedure
+      model = optimization.model
+        
+      # And evaluate the model 
+      return self.evaluate_model(model)
+
+    
+    # Evaluation function for the model (which needs to be a GenerativeModel 
+    # This means that it has a `sample()` function to generate samples
+    def evaluate_model(self, model: GenerativeModel):
+      
+      # Generate the samples
+      with torch.no_grad():
+        x_gen = model.sample([self.n_pictures], **self.sampling_params).to('cpu')
+
+      # Return a log-entry with the type IMAGE_ENTRY 
+      return LogEntry(
+      data_type=IMAGE_ENTRY,  # Type of the logged object, to be interpreted by the logger
+      value=make_grid(x_gen, nrow=self.n_pictures)  # Value to log
+      )
+    
+```
+The corresponding [configuration file](config/evaluation/generation.yaml) defines the name that will be visualized in the Tensorboard/Weights & Bias log and the logging frequency as follows:
+```yaml
+Images/Samples:                                             # The key is used to define the entry name
+  evaluate_every: ${eval_params.samples.every}              # Frequency of evaluation
+  evaluator:                                                # Evaluator object as defined above
+    _target_: code.evaluation.image.ImageSampleEvaluation   # Class for the evaluation
+    n_pictures: ${eval_params.samples.n_samples}            # Parameters passed to __init__()
+```
+
+The parameters for the evaluation metrics are collected in the `eval_params` dictiornary, which is defined in the experiment file.
+Note that the same experiment can have multiple evaluation metrics as long as the entry names (e.g. `Images/Samples` 
+are different from each other).
+
+
 ## Callbacks
 Each callback in `callbacks` must be an instance of a [Pytorch Lighning callback](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
-Callbacks are mainly used for checkpointing or logging.
+Callbacks are mainly used for 
+[checkpointing](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html) or 
+[early stopping](https://pytorch-lightning.readthedocs.io/en/latest/common/early_stopping.html).
 
-Here we include the implementation of a [customized callback for evaluation](code/callbacks/evaluation_callbacks.py)
-named `EvaluationCallback` that calls a specified evaluation metric any pre-definite amount of time (`evaluate_every`). This quantity can be specified
-in model `iterations` or `epochs`, or in `seconds`,`minutes`,`hours` or `days` for increased flexibility.
-This structure allows us to completely separate training and evaluation code. Another advantage is that the same evaluation
-metric can be used for different models and architectures.
+Here we include an implementation of a [`TrainDurationCallback`](code/callbacks/stop_training.py) which allows one to define custom training time (in `iterations`,
+`global_steps`, `epochs`, `seconds`, `minutes`, `hours`, `days` as for the evaluation metrics).
+The `TrainDurationCallback` is added to the list of used callbacks by default and reads the train duration from a `train_for` variable
+in the configuration.
 
-Additional callbacks can be used for [early stopping](https://pytorch-lightning.readthedocs.io/en/latest/common/early_stopping.html)
-or other custom functions that need to act on the optimization procedure, model or its components.
-
-### Evaluation
-Each evaluation metric is defined as an object that implements an `evaluate(optimization_procedure)` parameter that 
-receives the Pytorch Lightning Module defining the optimization procedure and returns a `LogEntry` object, which 
-specifies type of the entry and its value. Each evaluation metric is designed to be logger-agnostic (and data-agnostic
-when possible).
-
-Here we report the code for the evaluation procedure that is responsible for sampling and logging pictures
-for an image generative model (such as the VAE reported in the previous examples):
-```python
-class ImageSampleEvaluation(Evaluation):
-    def __init__(self, n_pictures=10, **kwargs):
-        self.n_pictures = n_pictures
-        self.kwargs = kwargs
-
-    def evaluate(self, optimization: pl.LightningModule) -> LogEntry:
-        model = optimization.model
-
-        assert isinstance(model, GenerativeModel)
-
-        x_gen = model.sample([self.n_pictures], **self.kwargs).to('cpu')
-
-        return LogEntry(
-            data_type=IMAGE_ENTRY,                          #Type of the logged object, to be interpreted by the logger
-            value=make_grid(x_gen, nrow=self.n_pictures)    # Value to log
-        )
-```
-The corresponding configuration is reported in the [experiment definition example](#defining-new-experiments) 
-defined in the previous section.
+Additional callbacks can be used for other custom functions that need to act on the optimization procedure, 
+model or its components.
 
 ### Checkpoints
 The current implementation makes use of the Pytorch Lightning [Checkpoint Callback](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html)
@@ -601,21 +638,29 @@ Here we report the example for the Wandb Logger wrapper:
 ```python
 
 class WandbLogger(loggers.WandbLogger):
-  
-    def log(self, name: str, log_entry: LogEntry, global_step: int = None) -> None:
-        # single scalar
+    # Custom log function designed to handle typed log-entries.
+    # if defined, any additional counter in the optimization procedure is also logged.
+    def log(self, name: str, log_entry: LogEntry, global_step: int = None, counters: dict = None) -> None:
+        if counters is None:
+            entry = {}
+        else:
+            entry = {k: v for k, v in counters.items()}
+        entry['trainer/global_step'] = global_step
         if log_entry.data_type == SCALAR_ENTRY:
-            self.experiment.log({name: log_entry.value, 'trainer/global_step': global_step})
-        # multiple scalars
+            entry[name] = log_entry.value
+            self.experiment.log(entry, commit=False)
         elif log_entry.data_type == SCALARS_ENTRY:
-            entry = {'%s/%s' % (name, sub_name): v for sub_name, v in log_entry.value.items()}
-            entry['trainer/global_step'] = global_step
-            self.experiment.log(entry)
-        # Image
+            for sub_name, v in log_entry.value.items():
+                entry['%s/%s' % (name, sub_name)] = v
+            self.experiment.log(entry, commit=False)
         elif log_entry.data_type == IMAGE_ENTRY:
-            self.experiment.log(data={name: wandb.Image(log_entry.value)}, step=global_step)
+            entry[name] = wandb.Image(log_entry.value)
+            self.experiment.log(data=entry, step=global_step, commit=False)
             plt.close(log_entry.value)
-        # You can add other data-types to the chain of elif
+        elif log_entry.data_type == PLOT_ENTRY:
+            entry[name] = log_entry.value
+            self.experiment.log(data=entry, step=global_step, commit=False)
+            plt.close(log_entry.value)
         else:
             raise Exception('Data type %s is not recognized by WandBLogWriter' % log_entry.data_type)
 ```
@@ -630,13 +675,13 @@ the `config/device/laptop.yaml` files)
 trainer:
   checkpoint_callback: False    # Disable the default model checkpoints
 ```
-Or by terminal when launching the train script
+Or by terminal when launching the train script (e.g. enabling a 
+[fast dev run](https://pytorch-lightning.readthedocs.io/en/latest/common/debugging.html))
 ```bash
-python train.py experiment=MNIST_VAE +trainer.max_epochs=10
+python train.py experiment=MNIST_VAE +trainer.fast_dev_run=True
 ```
 
 ## Device
-
 The device-specific configuration is defined in a separate `.yaml` configuration file in `config/device`, this include
 (but is not limited to) directories and hardware-specific options.
 The `device` configuration will be assigned depending on the environment variable 'DEVICE_NAME'.
@@ -651,7 +696,6 @@ The run configuration object is used to define the name associated to the run (`
 corresponding project (`run.project`). These properties can be accessed and modified form the command line
 or by specifying them in the experiment definition.
 
-# Loading models 
-
+# Loading models
 The [loading.ipynb](loading.ipynb) notebook reports an example on how models can be easily retrieved directly from the
-Weights & Bias Api. 
+Weights & Bias Api and the Hydra `instantiate` function.

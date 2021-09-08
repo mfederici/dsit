@@ -9,8 +9,20 @@ defaults:
       - elbo
 
 params:
+  z_dim: 64
   beta: 0.01
+  lr: 1e-3
+  batch_size: 128
+  encoder_layers: [ 1024, 128 ]
+  classifier_layers: [ 128 ]
 
-# Seed for the model
+eval_params:
+  accuracy:
+    every: 1 minute
+    n_samples: 2048
+  elbo:
+    every: 1 minute
+    n_samples: 2048
+
 seed: 42
 

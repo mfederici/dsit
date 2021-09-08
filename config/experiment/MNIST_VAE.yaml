@@ -9,4 +9,25 @@ defaults:
     - generation
     - elbo
 
+params:
+  z_dim: 64
+  beta: 0.5
+  lr: 1e-3
+  batch_size: 128
+  encoder_layers: [ 1024, 128 ]
+  decoder_layers: [ 128, 1024 ]
+
+eval_params:
+  elbo:
+    every: 1 minute
+    n_samples: 2048
+  samples:
+    every: 1 minute
+    n_samples: 10
+  reconstruction:
+    sample_latents: False
+    evaluate_on: valid
+    every: 1 minute
+    n_samples: 10
+
 seed: 42

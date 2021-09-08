@@ -1,27 +1,15 @@
-# @package _global_
-architectures:
-  prior:
-    _target_: code.architectures.base.DiagonalNormal
-    z_dim: ${params.z_dim}
-  encoder:
-    _target_: code.architectures.MNIST.Encoder
-    layers: ${params.encoder_layers}
-    z_dim: ${params.z_dim}
-  decoder:
-    _target_: code.architectures.MNIST.Decoder
-    z_dim: ${params.z_dim}
-    layers: ${params.decoder_layers}
-  predictor:
-    _target_: code.architectures.MNIST.LatentClassifier
-    layers: ${params.classifier_layers}
-    z_dim: ${params.z_dim}
-
-params:
-  z_dim: 64
-  beta: 0.5
-  lr: 1e-3
-  batch_size: 128
-  encoder_layers: [ 1024, 128 ]
-  decoder_layers: [ 128, 1024 ]
-  classifier_layers: [ 128 ]
-
+prior:
+  _target_: code.architectures.base.DiagonalNormal
+  z_dim: ${params.z_dim}
+encoder:
+  _target_: code.architectures.MNIST.Encoder
+  layers: ${params.encoder_layers}
+  z_dim: ${params.z_dim}
+decoder:
+  _target_: code.architectures.MNIST.Decoder
+  z_dim: ${params.z_dim}
+  layers: ${params.decoder_layers}
+predictor:
+  _target_: code.architectures.MNIST.LatentClassifier
+  layers: ${params.classifier_layers}
+  z_dim: ${params.z_dim}
