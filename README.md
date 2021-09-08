@@ -80,7 +80,7 @@ python train.py +experiment=<EXPERIMENT_NAME> <OTHER_OPTIONS>
 As an example, the following command can be used to run a Variational Autoencoder on the MNIST dataset for 20 epochs
 with the value of the hyper-parameter `beta` set to `0.1`.
 ```shell
-python train.py +experiment=VAE_MNIST +trainer.max_epochs=20 params.beta=0.1
+python train.py +experiment=VAE_MNIST train_for="20 epochs" params.beta=0.1
 ```
 See the [Experiment Definition](#defining-new-experiments) for further information regarding the experimental setup
 
@@ -195,13 +195,15 @@ defaults:
 
 seed: 42                          # Set a fixed seed for reproducibility
 
-# Name of the run and project
-run:
-  project: VAE_experiments        # set the name of the project (`noname` by default)
+train_for: 50 epochs              # Definition of the training time in 'epochs'
+                                  # 'global_steps', 'iterations', 'seconds', 'minutes', 'hours' or 'days'
+                                  # are also available
+
+run:                              # Names for the run and project
+  project: VAE_experiments        # set the name of the project (`noname` is default)
   name: My_First_VAE              # Name of the run (used by Weights & Biases)
   
-# Values of the hyper-parameters
-params:
+params:                           # Values of the hyper-parameters
   z_dim: 64                       # Number of latent dimensions
   beta: 0.5                       # Value of regularization strength
   lr: 1e-3                        # Learning rate
@@ -209,8 +211,8 @@ params:
   encoder_layers: [ 1024, 128 ]   # Layers of the encoder model
   decoder_layers: [ 128, 1024 ]   # Layers of the decoder model
 
-# Parameters for the evaluation (such as frequency or number of samples)
-eval_params:
+
+eval_params:                      # Parameters for the evaluation (such as frequency or number of samples)
   elbo:
     every: 1 minute               # Compute ELBO every minute 
     n_samples: 2048               # using 2048 samples
