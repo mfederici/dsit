@@ -1,0 +1,24 @@
+CrossEntropy/Train(t=1):
+  evaluate_every: 1000 iterations
+  evaluator:
+    _target_: code.evaluation.CrossEntropyEvaluation
+    evaluate_on: train
+    n_samples: 10000
+CrossEntropy/Train(t=0):
+  evaluate_every: 1000 iterations
+  evaluator:
+    _target_: code.evaluation.CrossEntropyEvaluation
+    evaluate_on: train_t0
+    n_samples: 10000
+CrossEntropy/Test(t=0):
+  evaluate_every: 1000 iterations
+  evaluator:
+    _target_: code.evaluation.CrossEntropyEvaluation
+    evaluate_on: test
+    n_samples: 10000
+CrossEntropy/Test(t=1):
+  evaluate_every: 1000 iterations
+  evaluator:
+    _target_: code.evaluation.CrossEntropyEvaluation
+    evaluate_on: test_t1
+    n_samples: 10000

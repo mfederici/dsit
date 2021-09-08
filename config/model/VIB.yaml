@@ -1,11 +1,6 @@
-# @package _global_
 defaults:
-  - /data: CMNIST
   - /optimization: batch_ADAM_schedule
-  - /architectures: MLP
 
-
-# Definitions of the architectures used by the VIB model
 model:
   _target_: code.models.VIB
   prior: ${architectures.prior}
@@ -19,4 +14,3 @@ beta_scheduler:
   start_value: 0.00001
   start_iteration: 5000
   increment_by: 0.00005
-

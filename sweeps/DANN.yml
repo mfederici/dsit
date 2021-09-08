@@ -3,10 +3,8 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +experiment=DANN
-  - +evaluation=default
-  - architectures=MLP
-  - +train_for="50000 iterations"
+  - model=DANN
+  - train_for="50000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid

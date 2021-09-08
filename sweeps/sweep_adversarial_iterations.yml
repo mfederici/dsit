@@ -3,9 +3,7 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +evaluation=default
-  - architectures=MLP
-  - +train_for="25000 iterations"
+  - train_for="25000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid
@@ -28,7 +26,7 @@ parameters:
       - CMNIST
       - d-CMNIST
       - y-CMNIST
-  +experiment:
+  model:
     values:
       - DANN
       - CDANN

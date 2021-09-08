@@ -14,6 +14,10 @@ class Optimization(pl.LightningModule):
             'iteration': 0,
         }
 
+    def log_counters(self):
+        for name, value in self.counters.items():
+            self.log(name, value)
+
 
 class AdamBatchOptimization(Optimization):
     def __init__(self,
@@ -34,6 +38,10 @@ class AdamBatchOptimization(Optimization):
         self.lr = lr
         self.pin_memory = pin_memory
 
+    def log_counters(self) -> None:
+        for counter, value in self.counters.items():
+            self.log(counter, value)
+
     # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self):
         return DataLoader(self.data['train'],
@@ -45,13 +53,14 @@ class AdamBatchOptimization(Optimization):
     def log_components(self, loss_items):
         for name, value in loss_items.items():
             self.log('Train/%s' % name, value)
-        for name, value in self.counters.items():
-            self.log(name, value)
 
     def training_step(self, data, data_idx) -> STEP_OUTPUT:
         loss_items = self.model.compute_loss(data, data_idx)
         self.log_components(loss_items)
+
         self.counters['iteration'] += 1
+        self.log_counters()
+
         return loss_items
 
     def configure_optimizers(self):

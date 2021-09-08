@@ -3,10 +3,9 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - +experiment=IRM
-  - +evaluation=default
+  - model=IRM
   - architectures=MLP
-  - +train_for="50000 iterations"
+  - train_for="50000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid

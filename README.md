@@ -9,7 +9,7 @@ The following libraries are required to run the code:
 - pandas
 - tqdm
 
-## Use
-The notebook `visualizations.ipynb` contains detailed descriptions of the experiments ad usage for one of the CMNIST distributions considered in this work.
 
+## Use
+The notebook `error_decomposition.ipynb` contains detailed descriptions of the experiments ad usage for one of the CMNIST distributions considered in this work.
 The CMNIST, d-CMNIST and y-CMNIST variants are defined in the `/datasets` folder. `dataset.ipynb` shows an example of usage extending the default pytorch pipeline and 'Dataset' objects.

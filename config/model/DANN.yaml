@@ -1,15 +1,12 @@
 # @package _global_
 defaults:
-  - /data: CMNIST
   - /optimization: adversarial_batch_ADAM_schedule
-  - /architectures: MLP
 
-# Definitions of the architectures used by the VIB model
 model:
-  _target_: code.models.CDANN
+  _target_: code.models.DANN
   encoder: ${architectures.deterministic_encoder}
   latent_predictor: ${architectures.latent_predictor}
-  discriminator: ${architectures.joint_discriminator}
+  discriminator: ${architectures.discriminator}
   beta: ${params.beta}
 
 # Scheduler to determine the regularization strength while the model is training
@@ -18,7 +15,3 @@ beta_scheduler:
   start_value: 0.00001
   start_iteration: 5000
   increment_by: 0.02
-
-trainer:
-  max_epochs: 10000
-

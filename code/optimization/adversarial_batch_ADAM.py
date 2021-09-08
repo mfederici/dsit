@@ -19,6 +19,9 @@ class AdversarialAdamBatchRegularizedOptimization(AdamBatchRegularizedOptimizati
             loss_items = self.model.compute_adversarial_loss(batch, batch_idx)
             self.log('Train/AdversarialLoss', loss_items['loss'])
             self.counters['adversarial_iteration'] += 1
+
+            self.log_counters()
+
             return loss_items
 
     def configure_optimizers(self):

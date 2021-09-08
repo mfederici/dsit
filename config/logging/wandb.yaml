@@ -7,7 +7,7 @@ trainer:
     project: ${run.project}
     name: ${run.name}
     save_dir: ${run.dir}
-extra_callbacks:
+callbacks:
   - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
     save_last: true
   - _target_: code.callbacks.TrainDurationCallback

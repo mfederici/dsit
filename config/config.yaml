@@ -1,10 +1,18 @@
 defaults:
-  - device: ${oc.env:DEVICE_NAME}
   - logging: wandb
+  - device: ${oc.env:DEVICE_NAME}
+  - data: CMNIST
+  - architectures: MLP
+  - evaluation:
+      - accuracy
+      - cross-entropy
+
+train_for: 100 epochs
 
 trainer:
   _target_: pytorch_lightning.Trainer
   gpus: ${device.gpus}
+  max_epochs: 100000
 
 seed: 42
 
