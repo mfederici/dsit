@@ -103,7 +103,7 @@ command:
   - ${interpreter}
   - ${program}
   - +experiment=MNIST_VAE       # The experiment to launch
-  - +trainer.max_epochs=10      # Training for 10 epochs
+  - train_for="10 epochs"       # Training for 10 epochs
   - ${args_no_hyphens}          # parameters from the sweep (params.beta in this case)
 method: bayes                   # bayesian optimization
 metric:
