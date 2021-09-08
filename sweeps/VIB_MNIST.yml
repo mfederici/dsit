@@ -4,7 +4,7 @@ command:
   - ${interpreter}
   - ${program}
   - +experiment=MNIST_VIB
-  - +trainer.max_epochs=10
+  - train_for="10 epochs"
   - run.project=MNIST_examples
   - ${args_no_hyphens}
 method: bayes

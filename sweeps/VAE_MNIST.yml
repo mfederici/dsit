@@ -4,8 +4,8 @@ command:
   - ${interpreter}
   - ${program}
   - +experiment=MNIST_VAE
-  - +trainer.max_epochs=10
   - run.project=MNIST_examples
+  - train_for="10 epochs"
   - ${args_no_hyphens}
 method: bayes
 # The wandb framework allows to optimize for a specified metric using bayesian optimization.
