@@ -260,6 +260,9 @@ python train.py +experiment=MNIST_VAE params.beta=0.0001 train_for="30 minutes"
 ```
 one can overwrite the value of `params.beta`, changing it from `0.01` to `0.0001`, and set the
 total training time to `30 minutes`.
+The corresponding log will is visualized hereafter
+
+![](https://user-images.githubusercontent.com/6851861/132532063-bef8f685-8a76-45c5-8a6a-ec762fdb4aa8.png)
 
 Further details regarding the aforementioned configuration components can be found in the following sections.
 
@@ -523,6 +526,9 @@ class AdamBatchOptimization(Optimization):
         # The self.counters dictionary can be used to define custom counts
         # (e.g number of adversarial/generator iterations during adversarial training)
         self.counters['iteration'] += 1
+        
+        # Add the internal counters to the log
+        self.log_counters()
         
         return loss_items
     

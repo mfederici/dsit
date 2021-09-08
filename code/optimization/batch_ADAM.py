@@ -33,6 +33,10 @@ class AdamBatchOptimization(Optimization):
         self.lr = lr
         self.pin_memory = pin_memory
 
+    def log_counters(self) -> None:
+        for counter, value in self.counters.items():
+            self.log(counter, value)
+
     # this overrides the pl.LightningModule train_dataloader which is used by the Trainer
     def train_dataloader(self):
         return DataLoader(self.data['train'],
@@ -46,6 +50,9 @@ class AdamBatchOptimization(Optimization):
         for name, value in loss_items.items():
             self.log('Train/%s' % name, value)
         self.counters['iteration'] += 1
+
+        self.log_counters()
+
         return loss_items
 
     def configure_optimizers(self):
