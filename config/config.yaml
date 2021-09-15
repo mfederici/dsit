@@ -3,6 +3,7 @@ defaults:
   - device: ${oc.env:DEVICE_NAME}
   - data: CMNIST
   - architectures: MLP
+  - model: VIB
   - evaluation:
       - accuracy
       - cross-entropy

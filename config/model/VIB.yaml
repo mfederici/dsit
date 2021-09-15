@@ -1,3 +1,4 @@
+# @package _global_
 defaults:
   - /optimization: batch_ADAM_schedule
 
