@@ -1,15 +1,15 @@
 prior:
-  _target_: code.architectures.base.DiagonalNormal
+  _target_: src.architectures.base.DiagonalNormal
   z_dim: ${params.z_dim}
 encoder:
-  _target_: code.architectures.MNIST.Encoder
+  _target_: src.architectures.MNIST.Encoder
   layers: ${params.encoder_layers}
   z_dim: ${params.z_dim}
 decoder:
-  _target_: code.architectures.MNIST.Decoder
+  _target_: src.architectures.MNIST.Decoder
   z_dim: ${params.z_dim}
   layers: ${params.decoder_layers}
 predictor:
-  _target_: code.architectures.MNIST.LatentClassifier
+  _target_: src.architectures.MNIST.LatentClassifier
   layers: ${params.classifier_layers}
   z_dim: ${params.z_dim}

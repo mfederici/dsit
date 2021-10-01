@@ -1,7 +1,7 @@
 Images/Landmarks:
   evaluate_every: ${eval_params.landmarks.every}
   evaluator:
-    _target_: code.evaluation.image.ImageLandmarksEvaluation
+    _target_: src.evaluation.image.ImageLandmarksEvaluation
     evaluate_on: ${eval_params.landmarks.evaluate_on}
     n_pictures: ${eval_params.landmarks.n_pictures}
     sample_images: False

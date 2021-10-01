@@ -1,17 +1,17 @@
 train:
-  _target_: code.data.MNIST.MNISTWrapper
+  _target_: src.data.MNIST.MNISTWrapper
   root: ${device.data_root}
   split: train
   download: ${device.download_files}
 
 valid:
-  _target_: code.data.MNIST.MNISTWrapper
+  _target_: src.data.MNIST.MNISTWrapper
   root: ${device.data_root}
   split: valid
   download: ${device.download_files}
 
 test:
-  _target_: code.data.MNIST.MNISTWrapper
+  _target_: src.data.MNIST.MNISTWrapper
   root: ${device.data_root}
   split: test
   download: ${device.download_files}
