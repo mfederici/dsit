@@ -1,7 +1,0 @@
-data_root: /ssdstore/datasets
-experiments_root: /hddstore
-download_files: True
-num_workers: 32
-pin_memory: True
-gpus: 1
-

@@ -1,6 +1,0 @@
-data_root: /var/scratch/${oc.env:USER}/datasets
-experiments_root: /var/scratch/${oc.env:USER}
-download_files: true
-num_workers: 32
-pin_memory: True
-gpus: 1
