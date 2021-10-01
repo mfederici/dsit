@@ -22,6 +22,12 @@ class EvaluationCallback(TimedCallback):
         self.log_evaluation_time = log_evaluation_time
 
     def evaluate(self, pl_module: pl.LightningModule):
+        if self.pause_timers:
+            # Pause all the timers
+            for callback in pl_module.trainer.callbacks:
+                if isinstance(callback, TimedCallback):
+                    callback.stop_timer()
+
         time_before = time.time()
         log_entry = self.evaluator.evaluate(pl_module)
         if hasattr(pl_module, 'counters'):
@@ -40,6 +46,12 @@ class EvaluationCallback(TimedCallback):
                 log_entry=LogEntry(time.time()-time_before, SCALAR_ENTRY)
             )
 
+        if self.pause_timers:
+            # Restart the timers
+            for callback in pl_module.trainer.callbacks:
+                if isinstance(callback, TimedCallback):
+                    callback.start_timer()
+
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
         if self.log_beginning:
@@ -53,19 +65,8 @@ class EvaluationCallback(TimedCallback):
 
         if self.timer.is_time(counters):
             self.timer.update(counters)
-            if self.pause_timers:
-                # Pause all the timers
-                for callback in trainer.callbacks:
-                    if isinstance(callback, TimedCallback):
-                        callback.stop_timer()
 
             self.evaluate(pl_module)
-
-            if self.pause_timers:
-                # Restart the timers
-                for callback in trainer.callbacks:
-                    if isinstance(callback, TimedCallback):
-                        callback.start_timer()
 
     def on_train_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         if self.log_end:
