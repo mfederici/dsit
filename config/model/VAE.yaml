@@ -1,4 +1,4 @@
-_target_: src.models.unsupervised.VariationalAutoencoder
+_target_: examples.models.unsupervised.VariationalAutoencoder
 prior: ${architectures.prior}
 decoder: ${architectures.decoder}
 encoder: ${architectures.encoder}

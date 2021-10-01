@@ -313,7 +313,7 @@ in which the data-loaders are defined.
 ## Models
 The model configuration defines the parameters and references to required architectures. The model code is designed to be completely data-agnostic
 so that the same logic can be used across different experiments without any re-writing or patch.
-Here we report the example code for the `VariationalAutoencoder` [model](src/models/unsupervised/VAE.py):
+Here we report the example code for the `VariationalAutoencoder` [model](examples/models/unsupervised/VAE.py):
 ```python
 # the VariationalAutoencoder class is a torch.nn.Module that: 
 #  - inherits the `sample()` method from GenerativeModel,
@@ -480,7 +480,7 @@ The optimization procedure is designed to contain the logic regarding how the mo
 This includes the definition of optimizers, data-loaders (or environments for reinforcement learning) and learning-rate schedulers.
 Once again, the optimization procedure is designed to be modular and as independent from the other components as 
 possible (model-agnostic). Here we report the example
-for the a [batch-based training procedure with the ADAM optimizer](src/optimization/batch_ADAM.py):
+for the a [batch-based training procedure with the ADAM optimizer](examples/optimization/batch_ADAM.py):
 ```python
 # Each optimization procedure is a pytorch lightning module
 class AdamBatchOptimization(Optimization):
@@ -561,8 +561,8 @@ are defined in the [data](#data) and [model](#models) sections.
 ## Evaluation
 For easy and flexible evaluation, we defined a customized and extensible evaluation procedure using 
 [Pytorch Lighning callbacks](https://pytorch-lightning.readthedocs.io/en/latest/starter/new-project.html?highlight=Callbacks#callbacks).
-A custom [`EvaluationCallback`](src/callbacks/evaluation_callbacks.py) calls an 
-[`EvaluationProcedure`](src/evaluation/base.py) at pre-defined time intervals (in `global_steps`, `epochs`, `seconds`, 
+A custom [`EvaluationCallback`](framework/callbacks/evaluation_callbacks.py) calls an 
+[`EvaluationProcedure`](framework/evaluation/base.py) at pre-defined time intervals (in `global_steps`, `epochs`, `seconds`, 
 `minutes`, `hours`, `days` or any unit defined in the `counter` dictionary attribute of the `OptimizationProcedure`).
 
 This allows to easily define `Evaluation` procedures that map an instance of `Optimization` (containing `model` and `data`)
@@ -621,7 +621,7 @@ Callbacks are mainly used for
 [checkpointing](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html) or 
 [early stopping](https://pytorch-lightning.readthedocs.io/en/latest/common/early_stopping.html).
 
-Here we include an implementation of a [`TrainDurationCallback`](src/callbacks/stop_training.py) which allows one to define custom training time (in `iterations`,
+Here we include an implementation of a [`TrainDurationCallback`](framework/callbacks/stop_training.py) which allows one to define custom training time (in `iterations`,
 `global_steps`, `epochs`, `seconds`, `minutes`, `hours`, `days` as for the evaluation metrics).
 The `TrainDurationCallback` is added to the list of used callbacks by default and reads the train duration from a `train_for` variable
 in the configuration.
@@ -631,15 +631,15 @@ model or its components.
 
 ### Checkpoints
 The current implementation makes use of the Pytorch Lightning [Checkpoint Callback](https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html)
-with a [slight adaptation](src/callbacks/checkpoints.py) for Weight and Bias.
+with a [slight adaptation](framework/callbacks/checkpoints.py) for Weight and Bias.
 Basic Checkpoint callbacks are added into the 'config/logging' configuration.
 
 
 
 ## Loggers
 Since, in the [original Pytorch Lightning implementation](https://pytorch-lightning.readthedocs.io/en/stable/common/loggers.html?highlight=loggers), 
-the code for logging differs across different loggers, we implement an extension of [TensorBoard](src/loggers/tensorboard.py)
-and [Weights a& Bias](src/loggers/wandb.py) loggers that exposes a unified interface `log( name, log_entry, global_timestap)`.
+the code for logging differs across different loggers, we implement an extension of [TensorBoard](framework/logging/tensorboard.py)
+and [Weights a& Bias](framework/logging/wandb.py) loggers that exposes a unified interface `log( name, log_entry, global_timestap)`.
 The different `log_entry.data_type` are handled differently by different loggers. Currently only `scalar`, `scalars` and
 `image` are implemented, but the wraper can be easily extended for other data types.
 Here we report the example for the Wandb Logger wrapper:

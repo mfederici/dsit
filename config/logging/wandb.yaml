@@ -2,14 +2,14 @@
 trainer:
   checkpoint_callback: False
   logger:
-    _target_: code.loggers.WandbLogger
+    _target_: framework.logging.WandbLogger
     project: ${run.project}
     name: ${run.name}
     save_dir: ${run.dir}
 callbacks:
-  - _target_: code.callbacks.checkpoints.WandbModelCheckpoint
+  - _target_: framework.callbacks.checkpoints.WandbModelCheckpoint
     save_last: true
-  - _target_: code.callbacks.TrainDurationCallback
+  - _target_: framework.callbacks.TrainDurationCallback
     train_for: ${train_for}
 
 

@@ -1,4 +1,4 @@
-_target_: src.models.supervised.VariationalInformationBottleneck
+_target_: examples.models.supervised.VariationalInformationBottleneck
 prior: ${architectures.prior}
 predictor: ${architectures.predictor}
 encoder: ${architectures.encoder}

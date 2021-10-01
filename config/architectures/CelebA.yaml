@@ -1,16 +1,16 @@
 prior:
-  _target_: src.architectures.base.DiagonalNormal
+  _target_: examples.architectures.base.DiagonalNormal
   z_dim: ${params.z_dim}
 encoder:
-  _target_: src.architectures.CelebA.Encoder
+  _target_: examples.architectures.CelebA.Encoder
   layers: ${params.encoder_layers}
   z_dim: ${params.z_dim}
 decoder:
-  _target_: src.architectures.CelebA.Decoder
+  _target_: examples.architectures.CelebA.Decoder
   z_dim: ${params.z_dim}
   layers: ${params.decoder_layers}
   sigma: ${params.sigma}
 predictor:
-  _target_: src.architectures.CelebA.LandmarkPredictor
+  _target_: examples.architectures.CelebA.LandmarkPredictor
   layers: ${params.predictor_layers}
   z_dim: ${params.z_dim}
