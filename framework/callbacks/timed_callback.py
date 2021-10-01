@@ -8,6 +8,7 @@ class TimedCallback(pl.Callback):
         self.timer = TimeInterval(time)
         self._seconds = 0
         self.last_time = 0
+        self.timer_active = False
 
     def on_train_start(self, trainer: 'pl.Trainer', pl_module: 'pl.LightningModule') -> None:
         self.start_timer()
