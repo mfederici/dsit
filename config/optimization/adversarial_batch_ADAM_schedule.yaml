@@ -1,4 +1,4 @@
-_target_: code.optimization.AdversarialAdamBatchRegularizedOptimization
+_target_: src.optimization.AdversarialAdamBatchRegularizedOptimization
 
 model: ${model}
 data: ${data}

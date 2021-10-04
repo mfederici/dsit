@@ -1,2 +1,14 @@
 .idea
 .ipynb_checkpoints
+__pycache__
+*/__pycache__
+*/*/__pycache__
+*/*/*/__pycache__
+*.pdf
+wandb
+scripts/*
+results/CNN.csv
+results/MLP.csv
+Untitled*
+plot_results.ipynb
+

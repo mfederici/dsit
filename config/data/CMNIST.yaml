@@ -1,5 +1,5 @@
 train:
-  _target_: code.data.CMNIST
+  _target_: src.data.CMNIST
   version: CMNIST
   root: ${device.data_root}
   split: train+valid
@@ -7,7 +7,7 @@ train:
   download: ${device.download_files}
 
 train_t0:
-    _target_: code.data.CMNIST
+    _target_: src.data.CMNIST
     version: CMNIST
     root: ${device.data_root}
     split: train+valid
@@ -15,7 +15,7 @@ train_t0:
     download: ${device.download_files}
 
 test:
-  _target_: code.data.CMNIST
+  _target_: src.data.CMNIST
   version: CMNIST
   root: ${device.data_root}
   split: test
@@ -23,7 +23,7 @@ test:
   download: ${device.download_files}
 
 test_t1:
-  _target_: code.data.CMNIST
+  _target_: src.data.CMNIST
   version: CMNIST
   root: ${device.data_root}
   split: test

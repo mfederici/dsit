@@ -5,8 +5,8 @@ from omegaconf import DictConfig
 
 from pytorch_lightning.loggers import WandbLogger
 
-from code.callbacks import EvaluationCallback
-from code.utils.wandb_utils import add_config
+from framework.callbacks import EvaluationCallback
+from framework.utils.wandb_utils import add_config
 from pytorch_lightning import seed_everything
 
 

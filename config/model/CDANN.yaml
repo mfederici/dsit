@@ -3,7 +3,7 @@ defaults:
   - /optimization: adversarial_batch_ADAM_schedule
 
 model:
-  _target_: code.models.CDANN
+  _target_: src.models.CDANN
   encoder: ${architectures.deterministic_encoder}
   latent_predictor: ${architectures.latent_predictor}
   discriminator: ${architectures.joint_discriminator}
@@ -11,7 +11,7 @@ model:
 
 # Scheduler to determine the regularization strength while the model is training
 beta_scheduler:
-  _target_: code.utils.schedulers.LinearIncrementScheduler
+  _target_: src.utils.schedulers.LinearIncrementScheduler
   start_value: 0.00001
   start_iteration: 5000
   increment_by: 0.02

@@ -1,39 +1,39 @@
 # @package _global_
 architectures:
   prior:
-    _target_: code.architectures.base.DiagonalNormal
+    _target_: src.architectures.base.DiagonalNormal
     z_dim: ${params.z_dim}
   latent_predictor:
-    _target_: code.architectures.CMNIST.LatentClassifier
+    _target_: src.architectures.CMNIST.LatentClassifier
     layers: ${params.predictor.layers}
     dropout: ${params.predictor.dropout}
     z_dim: ${params.z_dim}
   encoder:
-    _target_: code.architectures.CMNIST.ConvolutionalEncoder
+    _target_: src.architectures.CMNIST.ConvolutionalEncoder
     layers: ${params.encoder.layers}
     dropout: ${params.encoder.dropout}
     conv_flat_size: ${params.encoder.conv_flat_size}
     z_dim: ${params.z_dim}
   deterministic_encoder:
-    _target_: code.architectures.CMNIST.ConvolutionalEncoder
+    _target_: src.architectures.CMNIST.ConvolutionalEncoder
     layers: ${params.encoder.layers}
     dropout: ${params.encoder.dropout}
     conv_flat_size: ${params.encoder.conv_flat_size}
     z_dim: ${params.z_dim}
     posterior: Delta
   predictor:
-    _target_: code.architectures.utils.SequentialModel
+    _target_: src.architectures.utils.SequentialModel
     models:
       - ${architectures.deterministic_encoder}
       - ${architectures.latent_predictor}
   discriminator:
-    _target_: code.architectures.CMNIST.Discriminator
+    _target_: src.architectures.CMNIST.Discriminator
     layers: ${params.discriminator.layers}
     dropout: ${params.discriminator.dropout}
     spectral_norm : ${params.discriminator.spectral_norm}
     z_dim: ${params.z_dim}
   joint_discriminator:
-    _target_: code.architectures.CMNIST.JointDiscriminator
+    _target_: src.architectures.CMNIST.JointDiscriminator
     layers: ${params.discriminator.layers}
     dropout: ${params.discriminator.dropout}
     spectral_norm: ${params.discriminator.spectral_norm}

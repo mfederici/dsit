@@ -1,0 +1,24 @@
+program: train.py
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - train_for="25000 iterations"
+  - run.project=dsit
+  - ${args_no_hyphens}
+method: grid
+parameters:
+  seed:
+    values:
+      - 7
+      - 42
+      - 1024
+  data:
+    values:
+      - CMNIST
+      - d-CMNIST
+      - y-CMNIST
+  model:
+    values:
+      - DANN
+      - CDANN
