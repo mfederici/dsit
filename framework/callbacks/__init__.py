@@ -1,4 +1,3 @@
 from framework.callbacks.evaluation_callbacks import EvaluationCallback
-from framework.callbacks.checkpoints import WandbModelCheckpoint, ModelCheckpoint
 from framework.callbacks.stop_training import TrainDurationCallback
 from framework.callbacks.timed_callback import TimedCallback

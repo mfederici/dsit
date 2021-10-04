@@ -1,7 +1,7 @@
 import pytorch_lightning.loggers as loggers
 import matplotlib.pyplot as plt
 
-from framework.logging.log_entry import SCALAR_ENTRY, SCALARS_ENTRY, IMAGE_ENTRY, LogEntry
+from framework.logging.log_entry import LogEntry, SCALAR_ENTRY, SCALARS_ENTRY, IMAGE_ENTRY, PLOT_ENTRY
 
 
 class TensorBoardLogger(loggers.TensorBoardLogger):
@@ -12,13 +12,17 @@ class TensorBoardLogger(loggers.TensorBoardLogger):
             entry = {k: v for k, v in counters.items()}
         if log_entry.data_type == SCALAR_ENTRY:
             entry[name] = log_entry.value
-            self.log_metrics(entry, global_step=global_step)
+            self.log_metrics(entry, step=global_step)
         elif log_entry.data_type == SCALARS_ENTRY:
             entry.update({'%s/%s' % (name, sub_name): v for sub_name, v in log_entry.value.items()})
             self.log_metrics(entry,
-                             global_step=global_step)
+                             step=global_step)
         elif log_entry.data_type == IMAGE_ENTRY:
             self.experiment.add_image(name, log_entry.value, global_step=global_step)
+            plt.close(log_entry.value)
+        elif log_entry.data_type == PLOT_ENTRY:
+            entry[name] = log_entry.value
+            self.experiment.log(data=entry, step=global_step)
             plt.close(log_entry.value)
         else:
             raise Exception('Data type %s is not recognized by TensorBoardLogger' % log_entry.data_type)
