@@ -1,13 +1,13 @@
 import numpy as np
-
-from code.discrete_models.criteria import InformationBottleneckCriterion, IndependenceCriterion, \
-                                          SufficiencyCriterion, SeparationCriterion
-from code.discrete_models.training import train
-from code.discrete_models.encoders import DiscreteEncoder
-from code.discrete_distributions import compute_ce
-from code.data.cmnist_dist import make_joint_distribution, CMNIST_VERSIONS
-from tqdm.auto import tqdm
 import pandas as pd
+
+from src.discrete.models.criteria import InformationBottleneckCriterion, IndependenceCriterion, \
+                                          SufficiencyCriterion, SeparationCriterion
+from src.discrete.models.training import train
+from src.discrete.models.encoders import DiscreteEncoder
+from src.discrete.distribution import compute_ce
+from src.data.cmnist_dist import make_joint_distribution, CMNIST_VERSIONS
+from tqdm.auto import tqdm
 
 n = 50
 criteria = [
