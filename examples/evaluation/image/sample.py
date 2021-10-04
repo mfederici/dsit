@@ -18,6 +18,7 @@ class ImageSampleEvaluation(Evaluation):
 
         with torch.no_grad():
             x_gen = model.sample([self.n_pictures], **self.sampling_params).to('cpu')
+            x_gen = torch.clamp(x_gen, 0, 1)
 
         return LogEntry(
             data_type=IMAGE_ENTRY,  # Type of the logged object, to be interpreted by the logger

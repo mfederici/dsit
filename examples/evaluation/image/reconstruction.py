@@ -49,6 +49,8 @@ class ImageReconstructionEvaluation(Evaluation):
 
             # Concatenate originals and reconstructions
             x_all = torch.cat([x.to('cpu'), x_rec], 2)
+            x_all = torch.clamp(x_all, 0, 1)
+
 
         # return a LogEntry
         return LogEntry(
