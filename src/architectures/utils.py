@@ -27,7 +27,7 @@ def make_cnn_stack(layers, dropout=0.0):
     cnn_layers = []
     for i in range(len(layers)):
         cnn_layers.append(nn.Conv2d(**layers[i]))
-        if i < len(layers)-2:
+        if i < len(layers)-1:
             if dropout > 0:
                 cnn_layers.append(nn.Dropout2d(dropout))
             cnn_layers.append(nn.ReLU(True))
