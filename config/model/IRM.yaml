@@ -13,3 +13,6 @@ beta_scheduler:
   start_value: 0.00001
   start_iteration: 5000
   increment_by: 0.02
+
+params:
+  batch_size: 1024

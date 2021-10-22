@@ -14,7 +14,8 @@ class VREx(RegularizedModel, PredictiveModel):
                    predictor: ConditionalDistribution,
                    beta: float,
                    n_envs: int = 2,
-                   use_std: bool = True
+                   use_std: bool = True,
+                   sum_batch_penalty: bool = True
                    ):
         super(VREx, self).__init__(beta=beta)
 
@@ -22,6 +23,7 @@ class VREx(RegularizedModel, PredictiveModel):
         self.n_envs = n_envs
         self.use_std = use_std
         self.one_hot = OneHot(n_envs)
+        self.sum_batch_penalty = sum_batch_penalty
 
     def compute_reg_loss(self, y_rec_loss, e):
 
@@ -29,15 +31,25 @@ class VREx(RegularizedModel, PredictiveModel):
         one_hot_e = self.one_hot(e.long())
 
         # Environment variance penalty
+
+        # Count how many examples for each one of the environments
         e_sum = one_hot_e.sum(0)
+
+        # Compute the total loss per environment
         env_loss = (y_rec_loss.unsqueeze(1) * one_hot_e).sum(0)
+
+        # Compute the mean loss per environment (with at least one occurrence)
         env_loss[e_sum > 0] = env_loss[e_sum > 0] / e_sum[e_sum > 0]
+
+        # The variance is the expected mean of the difference E[(l(e,x,y)- l(e))**2]
         loss_variance = ((env_loss - env_loss[e_sum > 0].mean()) ** 2)[e_sum > 0].mean()
 
         if not self.use_std:
-            return loss_variance
+            penalty = loss_variance
         else:
-            return loss_variance ** 0.5
+            penalty = loss_variance ** 0.5
+
+        return penalty
 
     def compute_loss_components(self, data):
         x = data['x']
@@ -55,6 +67,24 @@ class VREx(RegularizedModel, PredictiveModel):
         reg_loss = self.compute_reg_loss(rec_loss, e)
 
         return {'reconstruction': torch.mean(rec_loss), 'regularization': reg_loss}
+
+    def compute_loss(self, data, data_idx):
+        self.train()
+        loss_components = self.compute_loss_components(data)
+
+        reg_strength = self.beta
+
+        if self.sum_batch_penalty:
+            batch_size = data['x'].shape[0]
+            reg_strength *= batch_size
+
+        loss = loss_components['reconstruction'] + reg_strength * loss_components['regularization']
+
+        return {
+            'loss': loss,
+            'reconstruction': loss_components['reconstruction'].item(),
+            'regularization': loss_components['regularization'].item()
+        }
 
     def predict(self, x) -> Distribution:
         return self.predictor(x)

@@ -22,7 +22,7 @@ MNIST_TRAIN_EXAMPLES = 50000
 
 # Wrapper for the torchvision MNIST dataset with validation split
 class MNIST(Dataset):
-    def __init__(self, root, split, **params):
+    def __init__(self, root, split, keep_in_memory=False, device='cpu', **params):
         super(MNIST, self).__init__()
 
         dataset = torchvision.datasets.MNIST(root=root,
@@ -36,9 +36,29 @@ class MNIST(Dataset):
         elif not (split == MNIST_TEST) and not (split == MNIST_TRAIN_VALID):
             raise Exception('The possible splits are %s' % ', '.join(MNIST_SPLITS))
         self.dataset = dataset
+        self.keep_in_memory = keep_in_memory
+        if keep_in_memory:
+            cache = {
+                'x': torch.FloatTensor(len(dataset), 1, 28, 28).to(device),
+                'y': torch.LongTensor(len(dataset)).to(device)
+            }
+        else:
+            cache = None
+
+        self.cache = cache
+        self.device = device
+        self.stored_ids = []
 
     def __getitem__(self, index):
-        x, y = self.dataset[index]
+        if not self.keep_in_memory or not (index in self.stored_ids):
+            x, y = self.dataset[index]
+            if self.keep_in_memory:
+                self.cache['x'][index] = x.to(self.device)
+                self.cache['y'][index] = y
+                self.stored_ids.append(index)
+        else:
+            x = self.cache['x'][index]
+            y = self.cache['y'][index]
         return {'x': x, 'y': torch.LongTensor([y])}
 
     def __len__(self):
