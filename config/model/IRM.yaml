@@ -15,4 +15,4 @@ beta_scheduler:
   increment_by: 0.02
 
 params:
-  batch_size: 1024
+  batch_size: 4096
