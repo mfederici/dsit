@@ -44,6 +44,10 @@ class VREx(RegularizedModel, PredictiveModel):
         # The variance is the expected mean of the difference E[(l(e,x,y)- l(e))**2]
         loss_variance = ((env_loss - env_loss[e_sum > 0].mean()) ** 2)[e_sum > 0].mean()
 
+        if self.sum_batch_penalty:
+            batch_size = e.shape[0]
+            loss_variance *= batch_size
+
         if not self.use_std:
             penalty = loss_variance
         else:
@@ -67,24 +71,6 @@ class VREx(RegularizedModel, PredictiveModel):
         reg_loss = self.compute_reg_loss(rec_loss, e)
 
         return {'reconstruction': torch.mean(rec_loss), 'regularization': reg_loss}
-
-    def compute_loss(self, data, data_idx):
-        self.train()
-        loss_components = self.compute_loss_components(data)
-
-        reg_strength = self.beta
-
-        if self.sum_batch_penalty:
-            batch_size = data['x'].shape[0]
-            reg_strength *= batch_size
-
-        loss = loss_components['reconstruction'] + reg_strength * loss_components['regularization']
-
-        return {
-            'loss': loss,
-            'reconstruction': loss_components['reconstruction'].item(),
-            'regularization': loss_components['regularization'].item()
-        }
 
     def predict(self, x) -> Distribution:
         return self.predictor(x)
