@@ -62,7 +62,5 @@ def parse(conf: DictConfig):
     # Call the Pytorch Lightning training loop
     trainer.fit(optimization)
 
-import sys
 if __name__ == '__main__':
-    print(sys.argv)
     parse()

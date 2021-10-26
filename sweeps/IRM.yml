@@ -4,8 +4,7 @@ command:
   - ${interpreter}
   - ${program}
   - model=IRM
-  - architectures=MLP
-  - train_for="50000 iterations"
+  - train_for="25000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid

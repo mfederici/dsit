@@ -2,17 +2,18 @@ import torch
 import numpy as np
 
 from tqdm.auto import tqdm
-from torch.optim import Adam
+import torch.optim as optim_module
 
 from src.discrete.distribution import compute_ce
 
 
 def train(encoder, criterion, train_dist, test_dist,
-          step_iterations=1000, initial_iterations=5000, log_every=100, tollerance=1e-4, lr=1e-3, verbose=False):
+          step_iterations=1000, initial_iterations=5000, log_every=100, tollerance=1e-4, lr=1e-3,
+          optimizer_class='Adam', verbose=False):
     logs = []
 
-    # Initialize the ADAM optimizer =
-    opt = Adam(encoder.parameters(), lr=lr)
+    # Initialize the optimizer
+    opt = getattr(optim_module, optimizer_class)(encoder.parameters(), lr=lr)
 
     iterations = initial_iterations
     iteration = 0
@@ -22,14 +23,15 @@ def train(encoder, criterion, train_dist, test_dist,
         for i in tqdm(range(iterations)) if verbose else range(iterations):
             loss = criterion.compute_loss(encoder(train_dist))
 
-            if i % log_every == 0:
-                with torch.no_grad():
-                    logs.append({
-                        'Test Cross-entropy': compute_ce(encoder(test_dist).marginal(['y', 'z']),
-                                                         encoder(train_dist).conditional('y', 'z')).item(),
-                        'Train Cross-entropy': encoder(train_dist).h('y', 'z').item(),
-                        'iteration': iteration
-                    })
+            if not (log_every is None):
+                if i % log_every == 0:
+                    with torch.no_grad():
+                        logs.append({
+                            'Test Cross-entropy': compute_ce(encoder(test_dist).marginal(['y', 'z']),
+                                                             encoder(train_dist).conditional('y', 'z')).item(),
+                            'Train Cross-entropy': encoder(train_dist).h('y', 'z').item(),
+                            'iteration': iteration
+                        })
 
             opt.zero_grad()
             loss.backward()

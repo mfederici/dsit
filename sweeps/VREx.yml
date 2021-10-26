@@ -3,7 +3,7 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - architectures=CNN
+  - model=VREx
   - train_for="25000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
@@ -19,8 +19,3 @@ parameters:
       - CMNIST
       - d-CMNIST
       - y-CMNIST
-  model:
-    values:
-      - IRM
-      - VREx
-      - VIB

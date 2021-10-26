@@ -1,0 +1,10 @@
+n: 50                           # Number of values of the hyper-parameter to check
+z_dim: 64                       # Dimentionality of the latent space
+optimizer_class: 'Adam'         # class name of the optimizer in torch.optim
+lr: 1e-3                        # corresponding learning rate
+tollerance: 1e-4                # threshold that determines when the training should stop
+                                # variations in the training loss < 10^-4 will stop the training procedure
+initial_iterations: 5000        # First train the encoder for 5000 iterations
+step_iterations: 1000           # Then check for improvements every 1000 iterations
+savefile: results/discrete.csv  # File in which the results are saved
+verbose: False                  # Enable verbose output for training

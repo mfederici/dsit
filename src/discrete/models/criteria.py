@@ -1,6 +1,6 @@
 # class for a general training criterion: -I(y;z) + reg*r(y,e,x,z)
 class Criterion:
-    def __init__(self, reg):
+    def __init__(self, reg=0):
         self.reg = reg
 
     def compute_loss(self, dist):

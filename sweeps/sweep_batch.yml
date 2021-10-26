@@ -3,12 +3,17 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - architectures=CNN
   - train_for="25000 iterations"
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid
 parameters:
+  params.batch_size:
+    values:
+      - 64
+      - 256
+      - 1024
+      - 4096
   seed:
     values:
       - 7
@@ -21,5 +26,6 @@ parameters:
       - y-CMNIST
   model:
     values:
-      - CDANN
-      - DANN
+      - IRM
+      - VREx
+

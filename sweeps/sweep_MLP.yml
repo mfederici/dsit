@@ -20,6 +20,9 @@ parameters:
       - y-CMNIST
   model:
     values:
-      - IRM
-      - VREx
       - VIB
+      - DANN
+      - IRM
+      - CDANN
+      - VREx
+

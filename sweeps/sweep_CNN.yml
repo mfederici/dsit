@@ -3,8 +3,8 @@ command:
   - ${env}
   - ${interpreter}
   - ${program}
-  - model=DANN
   - train_for="25000 iterations"
+  - architectures=CNN
   - run.project=dsit
   - ${args_no_hyphens}
 method: grid
@@ -19,3 +19,11 @@ parameters:
       - CMNIST
       - d-CMNIST
       - y-CMNIST
+  model:
+    values:
+      - VIB
+      - DANN
+      - IRM
+      - CDANN
+      - VREx
+
