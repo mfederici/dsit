@@ -1,5 +1,5 @@
 # Distribution Shift: An Information-Theoretic Analysis
-<img align="center" width=80% alt="Distribution Shift example" src="https://user-images.githubusercontent.com/6851861/138881069-31b648b2-4f84-4909-9a31-37fbbdd65441.png">
+<img width=70% alt="Distribution Shift example" src="https://user-images.githubusercontent.com/6851861/138884747-cf9922b2-e113-4fea-a039-a7bdb650f027.png">
 
 This repository contains the code used for the results reported in the paper 
 [Distribution Shift: An Information-Theoretic Analysis](https://arxiv.org/abs/2106.03783).
@@ -77,7 +77,7 @@ using the flag `logging=tensorboard` when running the training script.
 
 ## Datasets
 
-<img align="center" width=70% alt="Graphical Models" src="https://user-images.githubusercontent.com/6851861/138869778-10e88f39-a371-43f7-b939-bf58bc201236.png">
+<img  width=70% alt="Graphical Models" src="https://user-images.githubusercontent.com/6851861/138869778-10e88f39-a371-43f7-b939-bf58bc201236.png">
 
 
 The code contains the implementation of the three variations of the Colored MNIST dataset 
@@ -117,7 +117,7 @@ also includes details regarding the training procedure for discrete models and h
 have been obtained.
 
 
-<img align="center" width=50% alt="Error Decomposition" src="https://user-images.githubusercontent.com/6851861/138878026-111128b4-b672-420b-8c17-c06e832a3a05.png">
+<img  width=50% alt="Error Decomposition" src="https://user-images.githubusercontent.com/6851861/138878026-111128b4-b672-420b-8c17-c06e832a3a05.png">
 
 
 ### Neural Network Models
