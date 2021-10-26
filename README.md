@@ -98,6 +98,8 @@ re-usability.
 
 ### Discrete models and direct criteria optimization
 ![Criteria](https://user-images.githubusercontent.com/6851861/138870256-0e1bfe78-9f01-484f-8961-f33faa7dde6b.png)
+![Discrete trajectories](https://user-images.githubusercontent.com/6851861/138878641-8ee1f63b-7d43-4876-ab9e-9e40e91bcf3f.png)
+
 The discrete models can be trained using the command
 ```shell
 python train_discrete.py
@@ -109,7 +111,6 @@ on the CMNIST, d-CMNIST and y-CMNIST datasets for different regularization stren
 Similarly to the neural-network models training, the hyper-parameters can be changed
 either by editing the [`discrete_config/config.yaml`](discrete_config/config.yaml) file, or by 
 specifying the corresponding flags when launching the training script.
-![Discrete trajectories](https://user-images.githubusercontent.com/6851861/138878641-8ee1f63b-7d43-4876-ab9e-9e40e91bcf3f.png)
 
 The [`error_decomposition.ipynb`](error_decomposition.ipynb) contains a detailed explanation regarding how test error
 can be de-composed into **test information loss** and **latent test error**. This notebook
@@ -121,6 +122,8 @@ have been obtained.
 
 
 ### Neural Network Models
+![MLP results](https://user-images.githubusercontent.com/6851861/138880275-e6b247b7-7228-4f63-908a-3db16fe4ad83.png)
+
 Each model can be trained using the `train.py` script using the following command
 ```shell
 python train.py <FLAGS>
@@ -162,4 +165,3 @@ wandb agent <SWEEP_ID>
 ```
 from the project directory.
 
-![MLP results](https://user-images.githubusercontent.com/6851861/138880275-e6b247b7-7228-4f63-908a-3db16fe4ad83.png)
