@@ -1,5 +1,5 @@
 # An Information-theoretic Approach to Distribution Shifts
-<img width=70% alt="Distribution Shift example" src="https://user-images.githubusercontent.com/6851861/138884747-cf9922b2-e113-4fea-a039-a7bdb650f027.png">
+<img width=90% alt="Distribution Shift example" src="https://user-images.githubusercontent.com/6851861/139700177-39c857e8-73ad-40ca-b42c-d80f3110c125.gif">
 
 This repository contains the code used for the results reported in the paper 
 [An Information-theoretic Approach to Distribution Shifts](https://arxiv.org/abs/2106.03783).
