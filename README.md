@@ -122,7 +122,7 @@ have been obtained.
 
 
 ### Neural Network Models
-![MLP results](https://user-images.githubusercontent.com/6851861/138880275-e6b247b7-7228-4f63-908a-3db16fe4ad83.png)
+![MLP results](https://user-images.githubusercontent.com/6851861/139847241-4357528a-0a82-47ec-a5c1-717a086008be.gif)
 
 Each model can be trained using the `train.py` script using the following command
 ```shell
