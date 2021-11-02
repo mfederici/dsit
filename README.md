@@ -98,7 +98,7 @@ re-usability.
 
 ### Discrete models and direct criteria optimization
 ![Criteria](https://user-images.githubusercontent.com/6851861/138870256-0e1bfe78-9f01-484f-8961-f33faa7dde6b.png)
-![Discrete trajectories](https://user-images.githubusercontent.com/6851861/138878641-8ee1f63b-7d43-4876-ab9e-9e40e91bcf3f.png)
+![Discrete trajectories](https://user-images.githubusercontent.com/6851861/139831727-d262d687-e62f-4c03-bb15-a0ee3074d436.gif)
 
 The discrete models can be trained using the command
 ```shell
